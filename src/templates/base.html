@@ -10,11 +10,11 @@
     crossorigin="anonymous">
     <!--Aqui se hace la referencia hacia mi CSS personalizado-->
     {% block CSSPersonalizado %}
-
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/login.css') }}">
     {% endblock %}
-
+    
 </head>
-<body>
+<body class="inicio">
     {% block CuerpoPersonalizado %}
     
     {% endblock %}
