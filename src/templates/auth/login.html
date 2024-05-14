@@ -8,16 +8,28 @@
 
 {% block CuerpoPersonalizado %}
 <main class="form-signin w-100 m-auto">
-  <form>
+  <form action="/login" method="POST">
     <img class="mb-4" src="{{ url_for('static', filename='img/UPE_vertical.png') }}" alt="" width="190">
     <h1 class="h3 mb-3 fw-normal">Bienvenido <br> Inicie sesión</h1>
 
+    {% with messages = get_flashed_messages()%}
+    {% if messages %}
+    <br>
+    {% for message in messages %}
+    <div class = "alert alert-danger alert dismissible" role="alert">
+      <strong>{{ message }}</strong>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
     <div class="form-floating">
-      <input type="email" class="form-control" id="floatingInput" placeholder="name@example.com">
+      <input type="email" class="form-control" id="floatingInput" name="correo" placeholder="name@example.com">
       <label for="floatingInput">Correo Electrónico</label>
     </div>
     <div class="form-floating">
-      <input type="password" class="form-control" id="floatingPassword" placeholder="Password">
+      <input type="password" class="form-control" id="floatingPassword" name ="contra" placeholder="Password">
       <label for="floatingPassword">Contraseña</label>
     </div>
     <button class="btn btn-primary w-100 py-2" type="submit">Iniciar Sesión</button>
