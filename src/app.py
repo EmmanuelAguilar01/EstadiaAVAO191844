@@ -16,8 +16,8 @@ app_inicio_sesion = LoginManager(app)
 
 
 @app_inicio_sesion.user_loader
-def load_user(idUsuarios):
-    return ModeloUsuario.get_by_id(BaseDatos, idUsuarios)
+def load_user(id):
+    return ModeloUsuario.get_by_id(BaseDatos, id)
 
 
 """Ubicación del renderizado de la plantilla con su ruta"""
@@ -31,8 +31,9 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == "POST":
-        usuario = Usuario(request.form['correo'], request.form['contra'])
-        usuario_conectado = ModeloUsuario.Iniciar(BaseDatos, usuario)
+        correo = request.form['correo']
+        contra = request.form['contra']
+        usuario_conectado = ModeloUsuario.Iniciar(BaseDatos, correo, contra)
         if usuario_conectado is not None:
             if usuario_conectado.contra:
                 login_user(usuario_conectado)
