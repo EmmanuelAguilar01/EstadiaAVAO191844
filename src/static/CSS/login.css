@@ -108,3 +108,603 @@ body {
 .bd-mode-toggle .dropdown-menu .active .bi {
   display: block !important;
 }
+
+/****************************************FUENTES****************************************/
+@font-face {
+  font-family: TodoN;
+  src: url(../fonts/coolveticaNormal.otf);
+}
+@font-face {
+  font-family: TodoC;
+  src: url(../fonts/coolveticaCursiva.otf);
+}
+@font-face {
+  font-family: TodoC;
+  src: url(../fonts/coolveticaDelgada.otf);
+}
+/****************************************ESTILOS DE SECCIONES****************************************/
+a{
+  z-index: 3;
+}
+#Pie{
+  font-family: TodoN;
+  font-size: 20px;
+  color: rgb(255, 255, 255);
+  margin-top: 15%;
+  align-items: center;
+  height: 21px;
+}
+#Cab{
+  align-items: center;
+  font-family: TodoN;
+  font-size: 30px;
+  color: rgb(255, 255, 255);
+}
+.TextoN{
+  align-items: center;
+  font-family: TodoN;
+  font-size: 25px;
+  color: rgb(255, 255, 255);
+}
+/****************************************ESTILOS DE PAGINAS****************************************/
+#inicio{
+  background-image: url(../Pagina/Imagenes/inicio.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
+
+}
+#inicioSesion{
+  background-image: url(../Pagina/Imagenes/iniciarSesion.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+#detectorU{
+  background-image: url(../Pagina/Imagenes/detectorU.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  align-items: center;
+}
+#detectorA{
+  background-image: url(../Pagina/Imagenes/detectorU.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  align-items: center;
+}
+#nuevoUsuario{
+  background-image: url(../img/NewUser.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
+
+}
+#procesamiento{
+  background-image: url(../Pagina/Imagenes/procesador.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
+
+}
+#procesamientoA{
+  background-image: url(../Pagina/Imagenes/procesador.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
+
+}
+#modificarU{
+  background-image: url(../Pagina/Imagenes/modificarUsuario.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
+
+}
+#modificarUF{
+  background-image: url(../Pagina/Imagenes/modificarF.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
+
+}
+.Form{
+  border: none;
+}
+.Imagen{
+  align-items: center;
+  margin-top: 5%;
+
+}
+.Formulario{
+  font-size: 10px;
+  font-family: TodoN;
+  border: solid 2px;
+  padding: 15px;
+  border-radius: 5px;
+  outline: none;
+}
+.Formulario:focus{
+  border-color: blueviolet;
+}
+.contenedor-botones2 {
+width: 100%;
+display: grid;
+grid-template-columns: repeat(2, 1fr);
+gap: 40px;
+}
+.contenedor-botones3 {
+width: 100%;
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 40px;
+}
+.contenedor-botones4 {
+width: 100%;
+display: grid;
+grid-template-columns: repeat(4, 1fr);
+gap: 40px;
+}
+/****************************************ESTILOS DE BOTONES 1****************************************/
+.Botones{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 10%;
+  height: 40px;
+  background:rgb(185, 48, 38);
+  color: beige;
+  font-family: TodoN;
+  font-size: 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: .3s ease all;
+}
+.Botones span{
+  transition: .5s ease-in-out all;
+  position: absolute;
+  left: 47.5%;
+}
+.Botones .FlechaN{
+  display: flex;
+  align-items: center;
+  position: absolute;
+  z-index: 2;
+  left: 48.5%;
+  transition: .5s ease-in-out all;
+  opacity: 0;
+}
+.Botones svg{
+  color: beige;
+  width: 25px;
+  height: 25px;
+}
+.Botones:hover .FlechaN{
+  left: 52.5%;
+  opacity: 1;
+}
+.Botones:hover span{
+  left: 46%;
+}
+.Botones:hover{
+  background:rgb(108, 20, 224);
+}
+/****************************************ESTILOS DE BOTON ACEPTAR 2****************************************/
+.BotonAceptar{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30%;
+  height: 40px;
+  background:rgb(185, 48, 38);
+  color: beige;
+  font-family: TodoN;
+  font-size: 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: .3s ease all;
+  margin-left: 30%;
+}
+.BotonAceptar span{
+  transition: .5s ease-in-out all;
+  position: absolute;
+  left: 19%;
+}
+.BotonAceptar .IAceptar{
+  display: flex;
+  align-items: center;
+  position: absolute;
+  z-index: 2;
+  left: 20%;
+  transition: .5s ease-in-out all;
+  opacity: 0;
+}
+.BotonAceptar svg{
+  color: beige;
+  width: 25px;
+  height: 25px;
+}
+.BotonAceptar:hover .IAceptar{
+  left: 26%;
+  opacity: 1;
+}
+.BotonAceptar:hover span{
+  left: 16%;
+}
+.BotonAceptar:hover{
+  background:rgb(108, 20, 224);
+}
+/****************************************ESTILOS DE BOTON CANCELAR 2****************************************/
+.BotonCancelar{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30%;
+  height: 40px;
+  background:rgb(185, 48, 38);
+  color: beige;
+  font-family: TodoN;
+  font-size: 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: .3s ease all;
+  margin-left: 30%;
+}
+.BotonCancelar span{
+  transition: .5s ease-in-out all;
+  position: absolute;
+  right: 23.5%;
+}
+.BotonCancelar .ICancelar{
+  display: flex;
+  align-items: center;
+  position: absolute;
+  z-index: 2;
+  right: 23.5%;
+  transition: .5s ease-in-out all;
+  opacity: 0;
+}
+.BotonCancelar svg{
+  color: beige;
+  width: 25px;
+  height: 25px;
+}
+.BotonCancelar:hover .ICancelar{
+  right: 21%;
+  opacity: 1;
+}
+.BotonCancelar:hover span{
+  right: 26%;
+}
+.BotonCancelar:hover{
+  background:rgb(108, 20, 224);
+}
+/****************************************ESTILOS DE BOTONES 3****************************************/
+/****************************************ESTILOS DE BOTONES 3 MODIFICAR****************************************/
+.BotonMod{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 45%;
+  height: 40px;
+  background:rgb(185, 48, 38);
+  color: beige;
+  font-family: TodoN;
+  font-size: 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: .3s ease all;
+  margin-left: 30%;
+}
+.BotonMod span{
+  transition: .5s ease-in-out all;
+  position: absolute;
+  left: 13.5%;
+}
+.BotonMod .IMod{
+  display: flex;
+  align-items: center;
+  position: absolute;
+  z-index: 2;
+  left: 13.5%;
+  transition: .5s ease-in-out all;
+  opacity: 0;
+}
+.BotonMod svg{
+  color: beige;
+  width: 25px;
+  height: 25px;
+}
+.BotonMod:hover .IMod{
+  left: 21%;
+  opacity: 1;
+}
+.BotonMod:hover span{
+  left: 10.8%;
+}
+.BotonMod:hover{
+  background:rgb(108, 20, 224);
+}
+/****************************************ESTILOS DE BOTONES 3 ELIMINAR****************************************/
+.BotonEl{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 45%;
+  height: 40px;
+  background:rgb(185, 48, 38);
+  color: beige;
+  font-family: TodoN;
+  font-size: 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: .3s ease all;
+  margin-left: 30%;
+}
+.BotonEl span{
+  transition: .5s ease-in-out all;
+  position: absolute;
+  left: 48%;
+}
+.BotonEl .IEl{
+  display: flex;
+  align-items: center;
+  position: absolute;
+  z-index: 2;
+  left: 48.5%;
+  transition: .5s ease-in-out all;
+  opacity: 0;
+}
+.BotonEl svg{
+  color: beige;
+  width: 25px;
+  height: 25px;
+}
+.BotonEl:hover .IEl{
+  left: 55%;
+  opacity: 1;
+}
+.BotonEl:hover span{
+  left: 45%;
+}
+.BotonEl:hover{
+  background:rgb(108, 20, 224);
+}
+/****************************************ESTILOS DE BOTONES 3 CANCELAR****************************************/
+.BotonCan{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 45%;
+  height: 40px;
+  background:rgb(185, 48, 38);
+  color: beige;
+  font-family: TodoN;
+  font-size: 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: .3s ease all;
+  margin-left: 30%;
+}
+.BotonCan span{
+  transition: .5s ease-in-out all;
+  position: absolute;
+  right: 12%;
+}
+.BotonCan .ICan{
+  display: flex;
+  align-items: center;
+  position: absolute;
+  z-index: 2;
+  right: 12%;
+  transition: .5s ease-in-out all;
+  opacity: 0;
+}
+.BotonCan svg{
+  color: beige;
+  width: 25px;
+  height: 25px;
+}
+.BotonCan:hover .ICan{
+  right: 9%;
+  opacity: 1;
+}
+.BotonCan:hover span{
+  right: 14%;
+}
+.BotonCan:hover{
+  background:rgb(108, 20, 224);
+}
+/****************************************ESTILOS DE BOTONES 4****************************************/
+/****************************************ESTILOS DE BOTONES 4 INSERTAR****************************************/
+.BotonIn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 50%;
+  height: 60px;
+  background:rgb(185, 48, 38);
+  color: beige;
+  font-family: TodoN;
+  font-size: 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: .3s ease all;
+  margin-left: 25%;
+}
+.BotonIn span{
+  transition: .5s ease-in-out all;
+  position: absolute;
+  left: 8.8%;
+}
+.BotonIn .IIn{
+  display: flex;
+  align-items: center;
+  position: absolute;
+  z-index: 2;
+  left: 8.8%;
+  transition: .5s ease-in-out all;
+  opacity: 0;
+}
+.BotonIn svg{
+  color: beige;
+  width: 25px;
+  height: 25px;
+}
+.BotonIn:hover .IIn{
+  left: 15%;
+  opacity: 1;
+}
+.BotonIn:hover span{
+  left: 7%;
+}
+.BotonIn:hover{
+  background:rgb(108, 20, 224);
+}
+/****************************************ESTILOS DE BOTONES 4 CANCELAR****************************************/
+.BotonC{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 53%;
+  height: 40px;
+  background:rgb(185, 48, 38);
+  color: beige;
+  font-family: TodoN;
+  font-size: 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: .3s ease all;
+  margin-left: 25%;
+}
+.BotonC span{
+  transition: .5s ease-in-out all;
+  position: absolute;
+  left: 33.5%;
+}
+.BotonC .ICa{
+  display: flex;
+  align-items: center;
+  position: absolute;
+  z-index: 2;
+  left: 33.5%;
+  transition: .5s ease-in-out all;
+  opacity: 0;
+}
+.BotonC svg{
+  color: beige;
+  width: 25px;
+  height: 25px;
+}
+.BotonC:hover .ICa{
+  left: 41%;
+  opacity: 1;
+}
+.BotonC:hover span{
+  left: 32.5%;
+}
+.BotonC:hover{
+  background:rgb(108, 20, 224);
+}
+/****************************************ESTILOS DE BOTONES 4 MOD USUARIO****************************************/
+.BotonM{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 55%;
+  height: 60px;
+  background:rgb(185, 48, 38);
+  color: beige;
+  font-family: TodoN;
+  font-size: 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: .3s ease all;
+  margin-left: 25%;
+}
+.BotonM span{
+  transition: .5s ease-in-out all;
+  position: absolute;
+  right: 33.7%;
+}
+.BotonM .IMo{
+  display: flex;
+  align-items: center;
+  position: absolute;
+  z-index: 2;
+  right: 33.7%;
+  transition: .5s ease-in-out all;
+  opacity: 0;
+}
+.BotonM svg{
+  color: beige;
+  width: 25px;
+  height: 25px;
+}
+.BotonM:hover .IMo{
+  right: 32%;
+  opacity: 1;
+}
+.BotonM:hover span{
+  right: 35%;
+}
+.BotonM:hover{
+  background:rgb(108, 20, 224);
+}
+/****************************************ESTILOS DE BOTONES 4 REG USUARIO****************************************/
+.BotonReg{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 55%;
+  height: 60px;
+  background:rgb(185, 48, 38);
+  color: beige;
+  font-family: TodoN;
+  font-size: 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: .3s ease all;
+  margin-left: 25%;
+}
+.BotonReg span{
+  transition: .5s ease-in-out all;
+  position: absolute;
+  right: 8%;
+}
+.BotonReg .IReg{
+  display: flex;
+  align-items: center;
+  position: absolute;
+  z-index: 2;
+  right: 8%;
+  transition: .5s ease-in-out all;
+  opacity: 0;
+}
+.BotonReg svg{
+  color: beige;
+  width: 25px;
+  height: 25px;
+}
+.BotonReg:hover .IReg{
+  right: 6%;
+  opacity: 1;
+}
+.BotonReg:hover span{
+  right: 9%;
+}
+.BotonReg:hover{
+  background:rgb(108, 20, 224);
+}
