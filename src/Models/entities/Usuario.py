@@ -21,7 +21,3 @@ class Usuario(UserMixin):
     def verificar_contra(cls, contraHash, contra):
         """Aplica un hash a la contraseña para seguridad"""
         return check_password_hash(contraHash, contra)
-
-    @property
-    def is_authenticated(self):
-        return self.contra is not None

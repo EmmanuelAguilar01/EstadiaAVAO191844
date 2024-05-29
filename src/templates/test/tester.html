@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/login.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página principal</title>
+</head>
+<body>
+
+<div class="navbar">
+    <div></div>
+        <a href="#" onclick="loadContent('page2')">Entrenamiento</a>
+        <a href="#" onclick="loadContent('page3')">Experimentador</a>
+        <a href="#" onclick="loadContent('page4')">Usuario</a>
+        <a href="#" onclick="loadContent('page5')">Reportes</a>
+        <a class = "btn btn-secondary" href="{{ url_for('logout') }}">Cerrar Sesión</a>
+    </div>
+  
+</div>
+
+<div id="content" class="content">
+  <!-- Aquí se cargará el contenido de las páginas -->
+</div>
+
+<script>
+window.onload = function() {
+    loadContent('page1');  // Carga el contenido de la página 1 por defecto
+}
+function loadContent(page) {
+    var content = document.getElementById('content');
+    switch(page) {
+        case 'page1':
+            content.innerHTML = '<h1>Usuario tester {{ current_user.nombre }} {{ current_user.apellido }}</h1><p>Contenido de la página 1...</p>';
+            break;
+        case 'page2':
+            content.innerHTML = '<h1>Página 2</h1><p>Contenido de la página 2...</p>';
+            break;
+        case 'page3':
+            content.innerHTML = '<h1>Página 3</h1><p>Contenido de la página 3...</p>';
+            break;
+        case 'page4':
+            content.innerHTML = '<h1>Página 3</h1><p>Contenido de la página 4...</p>';
+        break;
+        case 'page5':
+            content.innerHTML = '<h1>Página 3</h1><p>Contenido de la página 5...</p>';
+        break;
+    }
+}
+</script>
+
+</body>
+</html>

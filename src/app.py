@@ -1,20 +1,25 @@
+# Importación de librerias para el proyecto
+from datetime import date
 from flask_mysqldb import MySQL
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required
-from config import configuracion
 from flask_wtf.csrf import CSRFProtect
-from Models.ModeloUsuario import ModeloUsuario
-from datetime import date
 from werkzeug.security import generate_password_hash
+from config import configuracion
+from Models.ModeloUsuario import ModeloUsuario
 
 
+# Inicialización de la Aplicación
 app = Flask(__name__)
+# Creación del Token de seguridad
 Token = CSRFProtect()
 # Conexion a la base de datos
 BaseDatos = MySQL(app)
 
 # Inidicacion para mantener el usuario conectado y mantener su informacion
 app_inicio_sesion = LoginManager(app)
+
+# Configuración de la libreria de Load_user para solicitar la información del usuario desde su ID
 
 
 @app_inicio_sesion.user_loader
@@ -24,33 +29,54 @@ def load_user(id):
 
 # Ubicación del renderizado de la plantilla con su ruta
 
-
+# Es la ruta por defecto o la principal siendo solo la ruta vacia que automáticamente manda a la ruta LOGIN
 @app.route('/')
 def index():
     return redirect(url_for('login'))
+
+# Configuración de la ruta LOGIN, solicitud y envio de los datos que se obtienen en el formulario
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == "POST":
+        # Obtención de los datos del formulario
         correo = request.form['correo']
         contra = request.form['contra']
+        # Comparación de que no este vacío ninguno de los dos campos
         if not correo or not contra:
+            # Mensaje de error
             flash("Debes ingresar un correo y una contraseña")
+            # Regresa a la misma vista
             return render_template('auth/login.html')
+        # Configuración de la variable para recibir los datos del Modelo (Usuario) Cuando se haga la solicitud.
         usuario_conectado = ModeloUsuario.Iniciar(BaseDatos, correo, contra)
+        # Comparación de que el "Usuario conectado" no esté vacío
         if usuario_conectado is not None:
+            # Comparación de la contraseña
             if usuario_conectado.contra:
+                # Se logea un usuario al ser todo correcto y se identifica con la libreria de "Login_USer"
                 login_user(usuario_conectado)
-                return redirect(url_for('home'))
+                # Se hace la comparación del tipo de usuario que se registra
+                if usuario_conectado.tipo == 'Administrador':
+                    # Si el usuario registrado es de tipo administrador, se envia a la vista "Admin"
+                    return redirect(url_for('admin'))
+                # Si el usuario registrado es del tipo Tester, se envia a la vista "Tester"
+                elif usuario_conectado.tipo == 'Tester':
+                    return redirect(url_for('tester'))
             else:
+                # En caso de que no sea correcta la contraseña se indica el mensaje y se redirecciona a la página Login
                 flash("Contraseña incorrecta")
                 return render_template('auth/login.html')
         else:
+            # En caso de que no exista el correo electrónico se envia mensaje y se redicciona a la pagina de login
             flash("Usuario no encontrado")
             return render_template('auth/login.html')
     else:
+        # Si no se quiere hacer nada, solo se renderiza la vista de Login
         return render_template('auth/login.html')
+
+# Configuración de la ruta de Cerrar Sesión (LOGOUT), usando la libreria de Logout y redirigiendo a Login
 
 
 @app.route('/logout')
@@ -58,26 +84,123 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
+# Configuración de la ruta para crear un nuevo usuario directamente sin inicar sesión
+
 
 @app.route('/new')
 def new():
-    return render_template('nuevoUsuario.html')
+    return render_template('test/nuevoUsuario.html')
+
+# Configuración de la ruta para acceso de Administrador, siendo asegurada por medio de la libreria de "Login_Required"
 
 
-@app.route('/home')
+@app.route('/admin', methods=['GET', 'POST'])
 @login_required
-def home():
-    return render_template('home.html')
+def admin():
+    return render_template('admin/admin.html')
+
+# Configuración de la ruta para acceso de Tester, siendo asegurada por medio de la libreria de "Login_Required"
+
+
+@app.route('/tester')
+@login_required
+def tester():
+    return render_template('test/tester.html')
+
+# Configuración de la ruta para crear un nuevo usuario cuando ya se haya iniciado sesión (SOLO ADMINISTRADOR), siendo asegurada por medio de la libreria de "Login_Required"
+
+
+@app.route('/nuevoUsuarioA')
+@login_required
+def nuevoUsuarioA():
+    return render_template('admin/nuevoUsuarioA.html')
+
+
+@app.route('/crudUsuarioA')
+@login_required
+def crudUsuarioA():
+    return render_template('admin/crudUsuarioA.html')
+
+# Configuración de la ruta para crear un nuevo usuario cuando ya se haya iniciado sesión (SOLO ADMINISTRADOR), siendo asegurada por medio de la libreria de "Login_Required"
+
+
+@app.route('/experimentadorA')
+@login_required
+def experimentadorA():
+    return render_template('admin/experimentadorA.html')
+
+
+@app.route('/entrenamientoA')
+@login_required
+def entrenamientoA():
+    return render_template('admin/entrenamientoA.html')
+
+
+@app.route('/tiposBasuraA')
+@login_required
+def tiposBasuraA():
+    return render_template('admin/tiposBasuraA.html')
+
+
+@app.route('/reportesA')
+@login_required
+def reportesA():
+    return render_template('admin/reportesA.html')
+
+# Configuración del módulo para agregar un nuevo usuario sin ininicar sesión
 
 
 @app.route('/agregarNuevo', methods=['POST'])
 def agregarNuevo():
+    # Se captan los datos de los diferentes elementos del formulario
+    if request.method == 'POST':
+        nombre = request.form['nombre']
+        apellido = request.form['apellido']
+        correo = request.form['correo']
+        # Se encripta la contraseña antes de realizar el envio hacia la base de datos
+        contra = generate_password_hash(request.form['contra'])
+        # Como se tiene este módulo sin iniciar sesión, todos los usuarios van a ser "Tester"
+        tipo = "Tester"
+        # La Fecha de registro será automática tomada desde el sistema
+        fechaRegistro = date.today().strftime('%Y-%m-%d')
+        intereses = request.form['intereses']
+        procedencia = request.form['procedencia']
+        # Se crea el cursor para direccionar a la base de datos
+        cursor = BaseDatos.connection.cursor()
+        # Se crea la sentencia SQL Para validar si ya existe el correo que se quiere registrar
+        cursor.execute("SELECT 1 FROM usuarios WHERE correo = %s", (correo,))
+        # Si ya esta registrado el correo se envia mensaje
+        if cursor.fetchone() is not None:
+            flash('Ya existe un usuario con ese correo electrónico')
+            return redirect(url_for('new'))
+        # En caso negativo (NO ESTE REGISTRADO) se hace nuevamente la conexión a la Base de datos
+        cursor = BaseDatos.connection.cursor()
+        # Se crea nueva sentencia SQL para la inserción de todos los datos captados en el formulario a todas las columnas de la Base.
+        sql = """INSERT INTO usuarios (Nombre,Apellido,Correo,Contra,Tipo,FechaRegistro,
+        Intereses,Procedencia) VALUES
+                ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}')""".format(
+            nombre, apellido, correo, contra,  tipo, fechaRegistro, intereses, procedencia)
+        # Se ejecuta la sentencia SQL junto con el cursor.
+        cursor.execute(sql)
+        # Se realiza el envio de los datos.
+        BaseDatos.connection.commit()
+        # Mensaje de guardado correcto
+        flash('Nuevo usuario, guardado satisfactoriamente')
+        # Al terminar el proceso se redirecciona a la ruta de "New"
+        return redirect(url_for('new'))
+
+# Se crea el módulo para agregar nuevo usuario pero en este caso siendo Administrador
+
+
+@app.route('/agregarNuevoA', methods=['POST'])
+def agregarNuevoA():
     if request.method == 'POST':
         nombre = request.form['nombre']
         apellido = request.form['apellido']
         correo = request.form['correo']
         contra = generate_password_hash(request.form['contra'])
-        tipo = "Usuario"
+        # A comparación del modulo anterior este se toma el tipo que se selecciona en el radio (Adimistrador o Tester)
+        tipo = request.form['tipo']
         fechaRegistro = date.today().strftime('%Y-%m-%d')
         intereses = request.form['intereses']
         procedencia = request.form['procedencia']
@@ -85,15 +208,36 @@ def agregarNuevo():
         cursor.execute("SELECT 1 FROM usuarios WHERE correo = %s", (correo,))
         if cursor.fetchone() is not None:
             flash('Ya existe un usuario con ese correo electrónico')
-            return redirect(url_for('new'))
-
+            return redirect(url_for('nuevoUsuarioA'))
         cursor = BaseDatos.connection.cursor()
-        sql = """INSERT INTO usuarios (Nombre,Apellido,Correo,Contra,Tipo,FechaRegistro,Intereses,Procedencia) VALUES
-                ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}')""".format(nombre, apellido, correo, contra,  tipo, fechaRegistro, intereses, procedencia)
+        sql = """INSERT INTO usuarios (Nombre,Apellido,Correo,Contra,Tipo,FechaRegistro,Intereses,Procedencia) 
+                VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}')""".format(
+            nombre, apellido, correo, contra,  tipo, fechaRegistro, intereses, procedencia)
         cursor.execute(sql)
         BaseDatos.connection.commit()
         flash('Nuevo usuario, guardado satisfactoriamente')
-        return redirect(url_for('new'))
+        # Al terminar el proceso se redirecciona a la ruta de "New"
+        return redirect(url_for('nuevoUsuarioA'))
+
+
+@app.route('/agregarBasura', methods=['POST'])
+def agregarBasura():
+    if request.method == 'POST':
+        tipo = request.form['tipoBasura']
+        descripcion = request.form['Descripcion']
+        afectaciones = request.form['Afectaciones']
+        tiempo = request.form['TiempoDegradacion']
+
+        cursor = BaseDatos.connection.cursor()
+        sql = """INSERT INTO tiposbasura (TipoBasura,Descrip,Afectaciones,TiempoDegradacion) 
+                VALUES ('{0}', '{1}', '{2}', '{3}')""".format(
+            tipo, descripcion, afectaciones, tiempo)
+        cursor.execute(sql)
+        BaseDatos.connection.commit()
+        flash('Nueva información, guardada satisfactoriamente')
+        # Al terminar el proceso se redirecciona a la ruta de "New"
+        return redirect(url_for('tiposBasuraA'))
+# Configuración del manejo de errores
 
 
 def status_401(error):
@@ -104,6 +248,7 @@ def status_404(error):
     return "<h1>Esta página no existe</h1>", 404
 
 
+# Configuración y ejecución del sistema como el llamado al módulo "configuración"
 if __name__ == '__main__':
     app.config.from_object(configuracion['desarrollo'])
     Token.init_app(app)

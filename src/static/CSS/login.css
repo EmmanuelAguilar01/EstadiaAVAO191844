@@ -147,11 +147,8 @@ a{
   color: rgb(255, 255, 255);
 }
 /****************************************ESTILOS DE PAGINAS****************************************/
-#inicio{
-  background-image: url(../Pagina/Imagenes/inicio.jpg);
-  background-repeat: no-repeat;
-  background-size: cover;
-
+#PEPE{
+  background:black
 }
 #inicioSesion{
   background-image: url(../Pagina/Imagenes/iniciarSesion.jpg);
@@ -707,4 +704,26 @@ gap: 40px;
 }
 .BotonReg:hover{
   background:rgb(108, 20, 224);
+}
+
+.navbar {
+  font-family: TodoN;
+  overflow: hidden;
+  background-color: #4222fa;
+  display: flex;
+  justify-content: space-between;
+  border-radius: 10px;
+}
+
+.navbar a {
+  float: left;
+  display: block;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+.content {
+  padding: 20px;
 }
