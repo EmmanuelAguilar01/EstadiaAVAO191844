@@ -146,6 +146,30 @@ a{
   font-size: 25px;
   color: rgb(255, 255, 255);
 }
+#Tabla{
+  border: 5px inset #ffe600 ;
+  align-items: center;
+  font-family: TodoN;
+  font-size: 23px;
+  color: white;
+  width:fit-content;
+  margin-left: 100px;
+  margin-right: 100px;
+  border-radius:22px;
+}
+#Tabla td {
+  text-align: center;
+  white-space: normal;
+}
+#Tabla thead tr {
+  text-align: center;
+  white-space: normal;
+  background-color: red;
+}
+#BTabla{
+  width:400px;
+  white-space:nowrap;
+}
 /****************************************ESTILOS DE PAGINAS****************************************/
 #PEPE{
   background:black
@@ -726,4 +750,82 @@ gap: 40px;
 
 .content {
   padding: 20px;
+}
+/****************************************ESTILOS DE BOTON TABLA EDITAR****************************************/
+.BotonEditar{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background:rgb(185, 48, 38);
+  color: beige;
+  font-family: TodoN;
+  font-size: 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: .3s ease all;
+  margin-left: 5%;
+}
+.BotonEditar span{
+  transition: .5s ease-in-out all;
+  position: absolute;
+  right: 20;
+}
+.BotonEditar .IEditar{
+  display: flex;
+  align-items: center;
+  position:sticky;
+  z-index: 2;
+  right: 11.05%;
+}
+.BotonEditar svg{
+  color: beige;
+  width: 25px;
+  height: 25px;
+}
+.BotonEditar:hover{
+  background:rgb(108, 20, 224);
+}
+/****************************************ESTILOS DE BOTON TABLA ELIMINAR****************************************/
+.BotonEliminar{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background:rgb(185, 48, 38);
+  color: beige;
+  font-family: TodoN;
+  font-size: 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: .3s ease all;
+}
+.BotonEliminar span{
+  transition: .5s ease-in-out all;
+  position: absolute;
+  right: 23.5%;
+}
+.BotonEliminar .IEliminar{
+  display: flex;
+  align-items: center;
+  position:sticky;
+  z-index: 2;
+  right: 11.05%;
+}
+.BotonEliminar svg{
+  color: beige;
+  width: 25px;
+  height: 25px;
+}
+.BotonEliminar:hover{
+  background:rgb(108, 20, 224);
+}
+#FINAL{
+  margin-top: 50px;
 }

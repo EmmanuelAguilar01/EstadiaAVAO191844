@@ -116,11 +116,6 @@ def nuevoUsuarioA():
     return render_template('admin/nuevoUsuarioA.html')
 
 
-@app.route('/crudUsuarioA')
-@login_required
-def crudUsuarioA():
-    return render_template('admin/crudUsuarioA.html')
-
 # Configuración de la ruta para crear un nuevo usuario cuando ya se haya iniciado sesión (SOLO ADMINISTRADOR), siendo asegurada por medio de la libreria de "Login_Required"
 
 
@@ -210,7 +205,7 @@ def agregarNuevoA():
             flash('Ya existe un usuario con ese correo electrónico')
             return redirect(url_for('nuevoUsuarioA'))
         cursor = BaseDatos.connection.cursor()
-        sql = """INSERT INTO usuarios (Nombre,Apellido,Correo,Contra,Tipo,FechaRegistro,Intereses,Procedencia) 
+        sql = """INSERT INTO usuarios (Nombre,Apellido,Correo,Contra,Tipo,FechaRegistro,Intereses,Procedencia)
                 VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}')""".format(
             nombre, apellido, correo, contra,  tipo, fechaRegistro, intereses, procedencia)
         cursor.execute(sql)
@@ -229,14 +224,130 @@ def agregarBasura():
         tiempo = request.form['TiempoDegradacion']
 
         cursor = BaseDatos.connection.cursor()
-        sql = """INSERT INTO tiposbasura (TipoBasura,Descrip,Afectaciones,TiempoDegradacion) 
+        sql = """INSERT INTO tiposbasura (TipoBasura,Descrip,Afectaciones,TiempoDegradacion)
                 VALUES ('{0}', '{1}', '{2}', '{3}')""".format(
             tipo, descripcion, afectaciones, tiempo)
         cursor.execute(sql)
         BaseDatos.connection.commit()
         flash('Nueva información, guardada satisfactoriamente')
         # Al terminar el proceso se redirecciona a la ruta de "New"
-        return redirect(url_for('tiposBasuraA'))
+        return redirect(url_for('crudBasuraA'))
+
+
+@app.route('/crudUsuarioA')
+@login_required
+def crudUsuarioA():
+    cursor = BaseDatos.connection.cursor()
+    cursor.execute('SELECT * FROM usuarios')
+    usuarios = cursor.fetchall()
+    cursor.close()
+    return render_template('admin/crudUsuarioA.html', usuarios=usuarios)
+
+
+@app.route('/eliminarA/<string:correo>')
+def eliminarA(correo):
+    cursor = BaseDatos.connection.cursor()
+    cursor.execute(
+        'DELETE FROM usuarios WHERE Correo = %s', (correo,))
+    BaseDatos.connection.commit()
+    flash('Usuario eliminado satisfactoriamente')
+    return redirect(url_for('crudUsuarioA'))
+
+
+@app.route('/editarA/<string:correo>')
+def editarA(correo):
+    cursor = BaseDatos.connection.cursor()
+    sql = "SELECT * FROM usuarios WHERE Correo = %s"
+    cursor.execute(sql, (correo,))
+    usuario = cursor.fetchone()
+    nombre = usuario[1]
+    apellido = usuario[2]
+    correo = usuario[3]
+    contra = usuario[4]
+    tipo = usuario[5]
+    fechaRegistro = usuario[6]
+    intereses = usuario[7]
+    procedencia = usuario[8]
+    return render_template('admin/editarUsuarioA.html', nombre=nombre, apellido=apellido,
+                           correo=correo, contra=contra, tipo=tipo, fechaRegistro=fechaRegistro, intereses=intereses,
+                           procedencia=procedencia)
+
+
+@app.route('/editarUsuarioA/<string:correo>', methods=['POST'])
+def editarUsuarioA(correo):
+    if request.method == 'POST':
+        nombre = request.form['nombre']
+        apellido = request.form['apellido']
+        correo = request.form['correo']
+        tipo = request.form['tipo']
+        fechaRegistro = request.form['FechaRegistro']
+        intereses = request.form['intereses']
+        procedencia = request.form['procedencia']
+        if 'contra' in request.form:
+            contra = generate_password_hash(request.form['contra'])
+        else:
+            contra = None
+        cursor = BaseDatos.connection.cursor()
+        sql = """UPDATE usuarios SET nombre = %s, apellido = %s,correo = %s, contra = %s,tipo = %s,
+                       fechaRegistro = %s, intereses = %s,procedencia = %s 
+                       WHERE correo = %s"""
+        cursor.execute(sql, (nombre, apellido, correo,
+                       contra, tipo, fechaRegistro, intereses, procedencia, correo))
+        BaseDatos.connection.commit()
+        flash('Contacto actualizado satisfactoriamente')
+        return redirect(url_for('crudUsuarioA'))
+
+
+# CRUD DE BASURA
+@app.route('/crudBasuraA')
+@login_required
+def crudBasuraA():
+    cursor = BaseDatos.connection.cursor()
+    cursor.execute('SELECT * FROM tiposbasura')
+    basuras = cursor.fetchall()
+    cursor.close()
+    return render_template('admin/tiposBasuraA.html', basuras=basuras)
+
+
+@app.route('/eliminarBasuraA/<string:tipoBasura>')
+def eliminarBasuraA(tipoBasura):
+    cursor = BaseDatos.connection.cursor()
+    cursor.execute(
+        'DELETE FROM tiposbasura WHERE tipoBasura = %s', (tipoBasura,))
+    BaseDatos.connection.commit()
+    flash('Usuario eliminado satisfactoriamente')
+    return redirect(url_for('crudBasuraA'))
+
+
+@app.route('/editarBasuraA/<string:tipoBasura>')
+def editarBasuraA(tipoBasura):
+    cursor = BaseDatos.connection.cursor()
+    sql = "SELECT * FROM tiposbasura WHERE tipoBasura = %s"
+    cursor.execute(sql, (tipoBasura,))
+    basura = cursor.fetchone()
+    tipoBasura = basura[1]
+    descripcion = basura[2]
+    afectaciones = basura[3]
+    tiempoDegradacion = basura[4]
+    return render_template('admin/editarBasuraA.html', tipoBasura=tipoBasura, descripcion=descripcion,
+                           afectaciones=afectaciones, tiempoDegradacion=tiempoDegradacion)
+
+
+@app.route('/editarBasuraAdmin/<string:tipoBasura>', methods=['POST'])
+def editarBasuraAdmin(tipoBasura):
+    if request.method == 'POST':
+        tipoBasura = request.form['tipoBasura']
+        descripcion = request.form['Descripcion']
+        afectaciones = request.form['Afectaciones']
+        tiempoDegradacion = request.form['TiempoDegradacion']
+        cursor = BaseDatos.connection.cursor()
+        sql = """UPDATE tiposbasura SET tipoBasura = %s, Descrip = %s,Afectaciones = %s, TiempoDegradacion = %s 
+                       WHERE tipoBasura = %s"""
+        cursor.execute(sql, (tipoBasura, descripcion, afectaciones,
+                       tiempoDegradacion, tipoBasura))
+        BaseDatos.connection.commit()
+        flash('Contacto actualizado satisfactoriamente')
+        return redirect(url_for('crudBasuraA'))
 # Configuración del manejo de errores
 
 
