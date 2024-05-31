@@ -55,7 +55,7 @@ def login():
         if usuario_conectado is not None:
             # Comparación de la contraseña
             if usuario_conectado.contra:
-                # Se logea un usuario al ser todo correcto y se identifica con la libreria de "Login_USer"
+                # Se logea un usuario al ser todo correcto y se identifica con la libreria de "Login_User"
                 login_user(usuario_conectado)
                 # Se hace la comparación del tipo de usuario que se registra
                 if usuario_conectado.tipo == 'Administrador':
@@ -102,10 +102,10 @@ def admin():
 # Configuración de la ruta para acceso de Tester, siendo asegurada por medio de la libreria de "Login_Required"
 
 
-@app.route('/tester')
+@app.route('/tester', methods=['GET', 'POST'])
 @login_required
 def tester():
-    return render_template('test/tester.html')
+    return render_template('test/Tester.html')
 
 # Configuración de la ruta para crear un nuevo usuario cuando ya se haya iniciado sesión (SOLO ADMINISTRADOR), siendo asegurada por medio de la libreria de "Login_Required"
 
@@ -348,6 +348,55 @@ def editarBasuraAdmin(tipoBasura):
         BaseDatos.connection.commit()
         flash('Contacto actualizado satisfactoriamente')
         return redirect(url_for('crudBasuraA'))
+
+
+# MANEJO DE USUARIO TESTER
+@app.route('/experimentadorT')
+@login_required
+def experimentadorT():
+    return render_template('test/experimentadorT.html')
+
+
+@app.route('/entrenamientoT')
+@login_required
+def entrenamientoT():
+    return render_template('test/entrenamientoT.html')
+
+
+@app.route('/reportesT')
+@login_required
+def reportesT():
+    return render_template('test/reportesT.html')
+
+
+@app.route('/crudUsuarioT')
+@login_required
+def crudUsuarioT():
+    return render_template('test/crudUsuarioT.html')
+
+
+@app.route('/editarUsuarioT/<string:correo>', methods=['POST'])
+def editarUsuarioT(correo):
+    if request.method == 'POST':
+        nombre = request.form['nombre']
+        apellido = request.form['apellido']
+        correo = request.form['correo']
+        fechaRegistro = request.form['FechaRegistro']
+        intereses = request.form['intereses']
+        procedencia = request.form['procedencia']
+        if 'contra' in request.form:
+            contra = generate_password_hash(request.form['contra'])
+        else:
+            contra = None
+        cursor = BaseDatos.connection.cursor()
+        sql = """UPDATE usuarios SET nombre = %s, apellido = %s,correo = %s, contra = %s,
+                       fechaRegistro = %s, intereses = %s,procedencia = %s 
+                       WHERE correo = %s"""
+        cursor.execute(sql, (nombre, apellido, correo,
+                       contra, fechaRegistro, intereses, procedencia, correo))
+        BaseDatos.connection.commit()
+        flash('Contacto actualizado satisfactoriamente')
+        return redirect(url_for('crudUsuarioT'))
 # Configuración del manejo de errores
 
 
