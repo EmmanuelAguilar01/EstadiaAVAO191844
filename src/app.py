@@ -1,13 +1,16 @@
 # Importación de librerias para el proyecto
-from datetime import date
+from datetime import date, timedelta
 from flask_mysqldb import MySQL
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required
 from flask_wtf.csrf import CSRFProtect
+from flask_jwt_extended import create_access_token
 from werkzeug.security import generate_password_hash
 from config import configuracion
 from Models.ModeloUsuario import ModeloUsuario
 
+# NOMBE : SistemaDetector
+# CONTRASEÑA: uvdo dcck clve mjvh
 
 # Inicialización de la Aplicación
 app = Flask(__name__)
@@ -18,6 +21,9 @@ BaseDatos = MySQL(app)
 
 # Inidicacion para mantener el usuario conectado y mantener su informacion
 app_inicio_sesion = LoginManager(app)
+
+# Generar un token que dure de 24 horas
+# reset_token = create_access_token(identity=usuario.id, expires_delta=timedelta(hours=24))
 
 # Configuración de la libreria de Load_user para solicitar la información del usuario desde su ID
 
@@ -84,6 +90,11 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
+
+@app.route('/recuperacion')
+def recuperacion():
+    return render_template('recuperacion.html')
+
 # Configuración de la ruta para crear un nuevo usuario directamente sin inicar sesión
 
 
@@ -125,10 +136,10 @@ def experimentadorA():
     return render_template('admin/experimentadorA.html')
 
 
-@app.route('/entrenamientoA')
+@app.route('/evaluadorA')
 @login_required
-def entrenamientoA():
-    return render_template('admin/entrenamientoA.html')
+def evaluadorA():
+    return render_template('admin/evaluadorA.html')
 
 
 @app.route('/tiposBasuraA')
@@ -141,6 +152,12 @@ def tiposBasuraA():
 @login_required
 def reportesA():
     return render_template('admin/reportesA.html')
+
+
+@app.route('/CrudDatasetA')
+@login_required
+def CrudDatasetA():
+    return render_template('admin/crudDatasetPruebaA.html')
 
 # Configuración del módulo para agregar un nuevo usuario sin ininicar sesión
 
@@ -357,10 +374,10 @@ def experimentadorT():
     return render_template('test/experimentadorT.html')
 
 
-@app.route('/entrenamientoT')
+@app.route('/evaluadorT')
 @login_required
-def entrenamientoT():
-    return render_template('test/entrenamientoT.html')
+def evaluadorT():
+    return render_template('test/evaluadorT.html')
 
 
 @app.route('/reportesT')
@@ -411,6 +428,7 @@ def status_404(error):
 # Configuración y ejecución del sistema como el llamado al módulo "configuración"
 if __name__ == '__main__':
     app.config.from_object(configuracion['desarrollo'])
+    app.config.from_object(configuracion['codigoR'])
     Token.init_app(app)
     app.register_error_handler(401, status_401)
     app.register_error_handler(404, status_404)

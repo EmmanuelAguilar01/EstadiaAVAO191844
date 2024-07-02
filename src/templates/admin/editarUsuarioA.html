@@ -5,7 +5,7 @@
             background-color: purple;
         }
 {% endblock %}
-{% block Cuerpo%}
+{% block Cuerpo %}
         <h1 id="Cab">Editar Usuario</h1>
         <form action="/editarUsuarioA/{{ correo }}" method="POST">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
