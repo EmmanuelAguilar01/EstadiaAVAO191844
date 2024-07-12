@@ -1,10 +1,11 @@
 # Importación de librerias para el proyecto
 from datetime import date, timedelta
+from flask_mail import Mail, Message
 from flask_mysqldb import MySQL
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required
 from flask_wtf.csrf import CSRFProtect
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, JWTManager, decode_token
 from werkzeug.security import generate_password_hash
 from config import configuracion
 from Models.ModeloUsuario import ModeloUsuario
@@ -19,11 +20,14 @@ Token = CSRFProtect()
 # Conexion a la base de datos
 BaseDatos = MySQL(app)
 
-# Inidicacion para mantener el usuario conectado y mantener su informacion
-app_inicio_sesion = LoginManager(app)
+# Configuración para uso del administrador de correo electrónico
+Recu_Contra = JWTManager(app)
 
-# Generar un token que dure de 24 horas
-# reset_token = create_access_token(identity=usuario.id, expires_delta=timedelta(hours=24))
+# Conexión para el servidor de correo electrónico
+Correo = Mail(app)
+
+# Indicacion para mantener el usuario conectado y mantener su informacion
+app_inicio_sesion = LoginManager(app)
 
 # Configuración de la libreria de Load_user para solicitar la información del usuario desde su ID
 
@@ -414,6 +418,58 @@ def editarUsuarioT(correo):
         BaseDatos.connection.commit()
         flash('Contacto actualizado satisfactoriamente')
         return redirect(url_for('crudUsuarioT'))
+
+# Recuperación de contraseña
+
+
+@app.route('/buscar_correo', methods=['POST'])
+def buscar_correo():
+    if request.method == 'POST':
+        correo = request.form['correo']
+        cursor = BaseDatos.connection.cursor()
+        sql = "SELECT idUsuarios FROM usuarios WHERE correo = %s"
+        cursor.execute(sql, (correo,))
+        BaseDatos.connection.commit()
+        resultado = cursor.fetchone()
+
+        if resultado:
+            id_usuario = resultado[0]
+            Token_Contra = create_access_token(
+                identity=id_usuario, expires_delta=timedelta(hours=24))
+            enviar_correo_recuperacion(correo, Token_Contra)
+            flash('Se ha enviado el enlace para recuperar tu contraseña al correo.')
+            return redirect(url_for('nuevaContra'))
+        else:
+            flash('El correo electrónico no esta registrado')
+            return redirect(url_for('recuperacion'))
+
+    cursor.close()
+    BaseDatos.connection.close()
+
+
+@app.route('/nuevaContra/<Token_Contra>', methods=['GET', 'POST'])
+def nuevaContra(Token_Contra):
+    try:
+        # Verifica el token y extrae el ID del usuario
+        token_data = decode_token(Token_Contra)
+        id_usuario = token_data['identity']
+
+        # Aquí debes mostrar el formulario para ingresar la nueva contraseña
+        # y luego actualizar la contraseña en tu base de datos
+        return 'Página de restablecimiento de contraseña'
+    except Exception as e:
+        # El token no es válido o ha expirado
+        # Puedes mostrar un mensaje de error o redirigir al usuario a otra página
+        return 'Error: Token inválido o expirado'
+
+
+def enviar_correo_recuperacion(correo, Token_Contra):
+    Mensaje = Message('Recuperar contraseña',
+                      sender='emmanuel.agva@gmail.com', recipients=[correo])
+    Mensaje.body = f'Haz clic en el siguiente enlace para restablecer tu contraseña: {
+        url_for("nuevaContra", Token_Contra=Token_Contra, _external=True)}'
+    Correo.send(Mensaje)
+
 # Configuración del manejo de errores
 
 
@@ -433,3 +489,4 @@ if __name__ == '__main__':
     app.register_error_handler(401, status_401)
     app.register_error_handler(404, status_404)
     app.run()
+# OLA

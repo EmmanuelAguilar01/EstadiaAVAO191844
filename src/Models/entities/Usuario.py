@@ -21,3 +21,9 @@ class Usuario(UserMixin):
     def verificar_contra(cls, contraHash, contra):
         """Aplica un hash a la contraseña para seguridad"""
         return check_password_hash(contraHash, contra)
+
+    @classmethod
+    def RecuperacionContrasena(self, id, correo, contra) -> None:
+        self.id = id
+        self.correo = correo
+        self.contra = contra

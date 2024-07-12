@@ -267,6 +267,12 @@ gap: 40px;
   justify-content: center;
   align-items: center;
 }
+.Contenedor-4 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 columnas */
+  grid-template-rows: repeat(2, 1fr); /* 2 filas */
+  gap: 10px; /* Espacio entre celdas (opcional) */
+}
 /****************************************ESTILOS DE BOTONES 1****************************************/
 .Botones{
   display: inline-flex;

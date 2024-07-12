@@ -35,3 +35,19 @@ class ModeloUsuario():
                 return None
         except Exception as ex:
             raise Exception(ex)
+
+    @classmethod
+    def recuperacion(cls, BaseDatos, id):
+        try:
+            Cursor = BaseDatos.connection.cursor()
+            sql = "SELECT idUsuarios,Correo,Contra FROM detector.usuarios WHERE Correo = %s"
+            Cursor.execute(sql, (id,))
+            row = Cursor.fetchone()
+            if row is not None:
+                recuperacion_C = Usuario.RecuperacionContrasena(
+                    row[0], row[1], row[2])
+                return recuperacion_C
+            else:
+                return None
+        except Exception as ex:
+            raise Exception(ex)

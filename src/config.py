@@ -1,5 +1,6 @@
 class Configuracion:
     SECRET_KEY = 'iGGTCXBKtWn0eun'
+    JWT_SECRET_KEY = 'pD0_]ea5*.A8q"yJ:pr>'
 
 # Configuración para la conexion de la base de datos
 
@@ -15,12 +16,12 @@ class ConfiguracionDesarrollo(Configuracion):
 
 # Configuración para un servidor web y la recuperación de contraseña
 class CodigoRecuperacion(Configuracion):
-    MAIL_SERVER = 'smtp.gmail.com'
-    MAIL_PORT = 587
-    MAIL_USE_TLS = True
+    MAIL_SERVER = 'smtp.gmail.net'
+    MAIL_PORT = 465
+    MAIL_USE_TLS = False
+    MAIL_USE_SSL = True
     MAIL_USERNAME = 'emmanuel.agva@gmail.com'
-    MAIL_PASSWORD = 'uvdodcckclvemjvh'
-    MAIL_DEFAULT_SENDER = 'EstadiaAVAO191844@gmail.com'
+    MAIL_PASSWORD = 'uvdo dcck clve mjvh'
 
 
 configuracion = {

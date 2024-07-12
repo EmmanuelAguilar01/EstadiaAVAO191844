@@ -9,7 +9,22 @@
     <h1 id="Cab">Gestión dataset para experimentar <br>Administrador</h1>
     <form action="/agregarBasura" method="POST">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    
+    <div class="Contenedor-4">
+        <div class="Celda">
+            <input type="file" name="Dataset" id="Dataset">
+        </div>
+        <div class="Celda"><b>FORMATO</b><br>
+            <input type="radio" id="opcion1" name="Formato" value="JPG">
+            <label for="opcion1">JPG</label><br>
+            <input type="radio" id="opcion2" name="Formato" value="PNG">
+            <label for="opcion2">PNG</label><br></div>
+        <div class="Celda">
+            <input type="text" class="Formulario" name="CantidadImagenes" placeholder="Cantidad de imagenes">
+        </div>
+        <div class="Celda">
+            <input type="text" class="Formulario" name="TipoBasura" placeholder="Tipo de Basura">
+        </div>
+    </div>
     <!--CONTENEDOR DE BOTONES-->
     <div class="contenedor-botones2">
         <button class="BotonAceptar" type="submit">
