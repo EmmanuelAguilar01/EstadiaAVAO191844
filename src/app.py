@@ -466,8 +466,7 @@ def nuevaContra(Token_Contra):
 def enviar_correo_recuperacion(correo, Token_Contra):
     Mensaje = Message('Recuperar contraseña',
                       sender='emmanuel.agva@gmail.com', recipients=[correo])
-    Mensaje.body = f'Haz clic en el siguiente enlace para restablecer tu contraseña: {
-        url_for("nuevaContra", Token_Contra=Token_Contra, _external=True)}'
+    Mensaje.body = f'Haz clic en el siguiente enlace para restablecer tu contraseña: {url_for("nuevaContra", Token_Contra=Token_Contra, _external=True)}'
     Correo.send(Mensaje)
 
 # Configuración del manejo de errores
