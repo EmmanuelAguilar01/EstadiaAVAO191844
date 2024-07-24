@@ -1,17 +1,22 @@
+import random
+import os
 import supervision as sv
 import cv2
 import torch
-import random
 import torchvision
-import os
 from transformers import DetrForObjectDetection, DetrImageProcessor
 import matplotlib.pyplot as plt
-import numpy as np
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
 from coco_eval import CocoEvaluator
 from tqdm.notebook import tqdm
+import warnings
+
+warnings.filterwarnings(
+    "ignore", message="resume_download is deprecated", category=FutureWarning)
+warnings.filterwarnings(
+    "ignore", message="The `max_size` parameter is deprecated", category=FutureWarning)
 
 # settings
 DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -62,78 +67,6 @@ class CocoDetection(torchvision.datasets.CocoDetection):
         target = encoding["labels"][0]
 
         return pixel_values, target
-
-
-TRAIN_DATASET = CocoDetection(
-    image_directory_path=TRAIN_DIRECTORY,
-    image_processor=image_processor,
-    train=True)
-VAL_DATASET = CocoDetection(
-    image_directory_path=VAL_DIRECTORY,
-    image_processor=image_processor,
-    train=False)
-TEST_DATASET = CocoDetection(
-    image_directory_path=TEST_DIRECTORY,
-    image_processor=image_processor,
-    train=False)
-
-print("Number of training examples:", len(TRAIN_DATASET))
-print("Number of validation examples:", len(VAL_DATASET))
-print("Number of test examples:", len(TEST_DATASET))
-
-# select random image
-image_ids = TRAIN_DATASET.coco.getImgIds()
-image_id = random.choice(image_ids)
-print('Image #{}'.format(image_id))
-
-# load image and annotatons
-image = TRAIN_DATASET.coco.loadImgs(image_id)[0]
-annotations = TRAIN_DATASET.coco.imgToAnns[image_id]
-image_path = os.path.join(TRAIN_DATASET.root, image['file_name'])
-image = cv2.imread(image_path)
-
-# annotate
-detections = sv.Detections.from_coco_annotations(coco_annotation=annotations)
-
-# we will use id2label function for training
-categories = TRAIN_DATASET.coco.cats
-id2label = {k: v['name'] for k, v in categories.items()}
-
-labels = [
-    f"{id2label[class_id]}"
-    for _, _, class_id, _
-    in detections
-]
-
-box_annotator = sv.BoxAnnotator()
-frame = box_annotator.annotate(
-    scene=image, detections=detections, labels=labels)
-
-plt.savefig("prueba.jpeg")
-sv.show_frame_in_notebook(image, (16, 16))
-
-
-def collate_fn(batch):
-    # DETR authors employ various image sizes during training, making it not possible
-    # to directly batch together images. Hence they pad the images to the biggest
-    # resolution in a given batch, and create a corresponding binary pixel_mask
-    # which indicates which pixels are real/which are padding
-    pixel_values = [item[0] for item in batch]
-    encoding = image_processor.pad(pixel_values, return_tensors="pt")
-    labels = [item[1] for item in batch]
-    return {
-        'pixel_values': encoding['pixel_values'],
-        'pixel_mask': encoding['pixel_mask'],
-        'labels': labels
-    }
-
-
-TRAIN_DATALOADER = DataLoader(
-    dataset=TRAIN_DATASET, collate_fn=collate_fn, batch_size=4, shuffle=True)
-VAL_DATALOADER = DataLoader(
-    dataset=VAL_DATASET, collate_fn=collate_fn, batch_size=4)
-TEST_DATALOADER = DataLoader(
-    dataset=TEST_DATASET, collate_fn=collate_fn, batch_size=4)
 
 
 class Detr(pl.LightningModule):
@@ -206,141 +139,210 @@ class Detr(pl.LightningModule):
         return VAL_DATALOADER
 
 
-model = Detr(lr=1e-4, lr_backbone=1e-5, weight_decay=1e-4)
-
-batch = next(iter(TRAIN_DATALOADER))
-outputs = model(pixel_values=batch['pixel_values'],
-                pixel_mask=batch['pixel_mask'])
-
-outputs.logits.shape
-
-# settings
-MAX_EPOCHS = 15
-
-# pytorch_lightning < 2.0.0
-# trainer = Trainer(gpus=1, max_epochs=MAX_EPOCHS, gradient_clip_val=0.1, accumulate_grad_batches=8, log_every_n_steps=5)
-
-# pytorch_lightning >= 2.0.0
-trainer = Trainer(devices=1, accelerator="gpu", max_epochs=MAX_EPOCHS,
-                  gradient_clip_val=0.1, accumulate_grad_batches=8, log_every_n_steps=5)
-
-trainer.fit(model)
-
-model.to(DEVICE)
-
-# utils
-categories = TEST_DATASET.coco.cats
-id2label = {k: v['name'] for k, v in categories.items()}
-box_annotator = sv.BoxAnnotator()
-
-# select random image
-image_ids = TEST_DATASET.coco.getImgIds()
-image_id = random.choice(image_ids)
-print('Image #{}'.format(image_id))
-
-# load image and annotatons
-image = TEST_DATASET.coco.loadImgs(image_id)[0]
-annotations = TEST_DATASET.coco.imgToAnns[image_id]
-image_path = os.path.join(TEST_DATASET.root, image['file_name'])
-image = cv2.imread(image_path)
-
-# annotate
-detections = sv.Detections.from_coco_annotations(coco_annotation=annotations)
-labels = [f"{id2label[class_id]}" for _, _, class_id, _ in detections]
-frame = box_annotator.annotate(
-    scene=image.copy(), detections=detections, labels=labels)
-
-print('ground truth')
-plt.savefig(plt.savefig())
-sv.show_frame_in_notebook(frame, (16, 16))
-
-# inference
-with torch.no_grad():
-
-    # load image and predict
-    inputs = image_processor(images=image, return_tensors='pt').to(DEVICE)
-    outputs = model(**inputs)
-
-    # post-process
-    target_sizes = torch.tensor([image.shape[:2]]).to(DEVICE)
-    results = image_processor.post_process_object_detection(
-        outputs=outputs,
-        threshold=CONFIDENCE_TRESHOLD,
-        target_sizes=target_sizes
-    )[0]
-
-# annotate
-detections = sv.Detections.from_transformers(
-    transformers_results=results).with_nms(threshold=0.5)
-labels = [f"{id2label[class_id]} {confidence:.2f}" for _,
-          confidence, class_id, _ in detections]
-frame = box_annotator.annotate(
-    scene=image.copy(), detections=detections, labels=labels)
-
-print('detections')
-plt.savefig(plt.savefig())
-sv.show_frame_in_notebook(frame, (16, 16))
+def collate_fn(batch):
+    # DETR authors employ various image sizes during training, making it not possible
+    # to directly batch together images. Hence they pad the images to the biggest
+    # resolution in a given batch, and create a corresponding binary pixel_mask
+    # which indicates which pixels are real/which are padding
+    pixel_values = [item[0] for item in batch]
+    encoding = image_processor.pad(pixel_values, return_tensors="pt")
+    labels = [item[1] for item in batch]
+    return {
+        'pixel_values': encoding['pixel_values'],
+        'pixel_mask': encoding['pixel_mask'],
+        'labels': labels
+    }
 
 
-def convert_to_xywh(boxes):
-    xmin, ymin, xmax, ymax = boxes.unbind(1)
-    return torch.stack((xmin, ymin, xmax - xmin, ymax - ymin), dim=1)
+if __name__ == "__main__":
+    TRAIN_DATASET = CocoDetection(
+        image_directory_path=TRAIN_DIRECTORY,
+        image_processor=image_processor,
+        train=True)
+    VAL_DATASET = CocoDetection(
+        image_directory_path=VAL_DIRECTORY,
+        image_processor=image_processor,
+        train=False)
+    TEST_DATASET = CocoDetection(
+        image_directory_path=TEST_DIRECTORY,
+        image_processor=image_processor,
+        train=False)
 
+    print("Number of training examples:", len(TRAIN_DATASET))
+    print("Number of validation examples:", len(VAL_DATASET))
+    print("Number of test examples:", len(TEST_DATASET))
 
-def prepare_for_coco_detection(predictions):
-    coco_results = []
-    for original_id, prediction in predictions.items():
-        if len(prediction) == 0:
-            continue
+    # select random image
+    image_ids = TRAIN_DATASET.coco.getImgIds()
+    image_id = random.choice(image_ids)
+    print('Image #{}'.format(image_id))
 
-        boxes = prediction["boxes"]
-        boxes = convert_to_xywh(boxes).tolist()
-        scores = prediction["scores"].tolist()
-        labels = prediction["labels"].tolist()
+    # load image and annotatons
+    image = TRAIN_DATASET.coco.loadImgs(image_id)[0]
+    annotations = TRAIN_DATASET.coco.imgToAnns[image_id]
+    image_path = os.path.join(TRAIN_DATASET.root, image['file_name'])
+    image = cv2.imread(image_path)
 
-        coco_results.extend(
-            [
-                {
-                    "image_id": original_id,
-                    "category_id": labels[k],
-                    "bbox": box,
-                    "score": scores[k],
-                }
-                for k, box in enumerate(boxes)
-            ]
-        )
-    return coco_results
+    # annotate
+    detections = sv.Detections.from_coco_annotations(
+        coco_annotation=annotations)
 
+    # we will use id2label function for training
+    categories = TRAIN_DATASET.coco.cats
+    id2label = {k: v['name'] for k, v in categories.items()}
 
-evaluator = CocoEvaluator(coco_gt=TEST_DATASET.coco, iou_types=["bbox"])
+    labels = [
+        f"{id2label[class_id]}"
+        for _, _, class_id, _
+        in detections
+    ]
 
-print("Running evaluation...")
+    box_annotator = sv.BoxAnnotator()
+    frame = box_annotator.annotate(
+        scene=image, detections=detections, labels=labels)
 
-for idx, batch in enumerate(tqdm(TEST_DATALOADER)):
-    pixel_values = batch["pixel_values"].to(DEVICE)
-    pixel_mask = batch["pixel_mask"].to(DEVICE)
-    labels = [{k: v.to(DEVICE) for k, v in t.items()} for t in batch["labels"]]
+    batch_size = 4
+    num_workers = 4
 
+    TRAIN_DATALOADER = DataLoader(
+        dataset=TRAIN_DATASET, collate_fn=collate_fn, batch_size=batch_size, shuffle=True, num_workers=num_workers)
+    VAL_DATALOADER = DataLoader(
+        dataset=VAL_DATASET, collate_fn=collate_fn, batch_size=batch_size, num_workers=num_workers)
+    TEST_DATALOADER = DataLoader(
+        dataset=TEST_DATASET, collate_fn=collate_fn, batch_size=batch_size, num_workers=num_workers)
+
+    model = Detr(lr=1e-4, lr_backbone=1e-5, weight_decay=1e-4)
+
+    batch = next(iter(TRAIN_DATALOADER))
+    outputs = model(
+        pixel_values=batch['pixel_values'], pixel_mask=batch['pixel_mask'])
+
+    outputs.logits.shape
+
+    # settings
+    MAX_EPOCHS = 5
+
+    # pytorch_lightning < 2.0.0
+    # trainer = Trainer(gpus=1, max_epochs=MAX_EPOCHS, gradient_clip_val=0.1, accumulate_grad_batches=8, log_every_n_steps=5)
+    trainer = Trainer(devices=1, accelerator="cpu", max_epochs=MAX_EPOCHS,
+                      gradient_clip_val=0.1, accumulate_grad_batches=8, log_every_n_steps=5)
+    # pytorch_lightning >= 2.0.0
+    trainer.fit(model)
+
+    model.to(DEVICE)
+
+    # utils
+    categories = TEST_DATASET.coco.cats
+    id2label = {k: v['name'] for k, v in categories.items()}
+    box_annotator = sv.BoxAnnotator()
+
+    # select random image
+    image_ids = TEST_DATASET.coco.getImgIds()
+    image_id = random.choice(image_ids)
+    print('Image #{}'.format(image_id))
+
+    # load image and annotatons
+    image = TEST_DATASET.coco.loadImgs(image_id)[0]
+    annotations = TEST_DATASET.coco.imgToAnns[image_id]
+    image_path = os.path.join(TEST_DATASET.root, image['file_name'])
+    image = cv2.imread(image_path)
+
+    # annotate
+    detections = sv.Detections.from_coco_annotations(
+        coco_annotation=annotations)
+    labels = [f"{id2label[class_id]}" for _, _, class_id, _ in detections]
+    frame = box_annotator.annotate(
+        scene=image.copy(), detections=detections, labels=labels)
+
+    print('ground truth')
+    plt.savefig(plt.savefig())
+    sv.show_frame_in_notebook(frame, (16, 16))
+
+    # inference
     with torch.no_grad():
-        outputs = model(pixel_values=pixel_values, pixel_mask=pixel_mask)
 
-    orig_target_sizes = torch.stack(
-        [target["orig_size"] for target in labels], dim=0)
-    results = image_processor.post_process_object_detection(
-        outputs, target_sizes=orig_target_sizes)
+        # load image and predict
+        inputs = image_processor(images=image, return_tensors='pt').to(DEVICE)
+        outputs = model(**inputs)
 
-    predictions = {target['image_id'].item(
-    ): output for target, output in zip(labels, results)}
-    predictions = prepare_for_coco_detection(predictions)
-    evaluator.update(predictions)
+        # post-process
+        target_sizes = torch.tensor([image.shape[:2]]).to(DEVICE)
+        results = image_processor.post_process_object_detection(
+            outputs=outputs,
+            threshold=CONFIDENCE_TRESHOLD,
+            target_sizes=target_sizes
+        )[0]
 
-evaluator.synchronize_between_processes()
-evaluator.accumulate()
-evaluator.summarize()
+    # annotate
+    detections = sv.Detections.from_transformers(
+        transformers_results=results).with_nms(threshold=0.5)
+    labels = [f"{id2label[class_id]} {confidence:.2f}" for _,
+              confidence, class_id, _ in detections]
+    frame = box_annotator.annotate(
+        scene=image.copy(), detections=detections, labels=labels)
 
-MODEL_PATH = os.path.join(
-    "(C:/Users/nayel/Desktop/Estadia - AVAO191844/hackathone.v2i.coco)", 'custom-model')
-model.model.save_pretrained(MODEL_PATH)
+    print('detections')
+    plt.savefig(plt.savefig())
+    sv.show_frame_in_notebook(frame, (16, 16))
 
-model = DetrForObjectDetection.from_pretrained(MODEL_PATH)
-model.to(DEVICE)
+    def convert_to_xywh(boxes):
+        xmin, ymin, xmax, ymax = boxes.unbind(1)
+        return torch.stack((xmin, ymin, xmax - xmin, ymax - ymin), dim=1)
+
+    def prepare_for_coco_detection(predictions):
+        coco_results = []
+        for original_id, prediction in predictions.items():
+            if len(prediction) == 0:
+                continue
+
+            boxes = prediction["boxes"]
+            boxes = convert_to_xywh(boxes).tolist()
+            scores = prediction["scores"].tolist()
+            labels = prediction["labels"].tolist()
+
+            coco_results.extend(
+                [
+                    {
+                        "image_id": original_id,
+                        "category_id": labels[k],
+                        "bbox": box,
+                        "score": scores[k],
+                    }
+                    for k, box in enumerate(boxes)
+                ]
+            )
+        return coco_results
+
+    evaluator = CocoEvaluator(coco_gt=TEST_DATASET.coco, iou_types=["bbox"])
+
+    print("Running evaluation...")
+
+    for idx, batch in enumerate(tqdm(TEST_DATALOADER)):
+        pixel_values = batch["pixel_values"].to(DEVICE)
+        pixel_mask = batch["pixel_mask"].to(DEVICE)
+        labels = [{k: v.to(DEVICE) for k, v in t.items()}
+                  for t in batch["labels"]]
+
+        with torch.no_grad():
+            outputs = model(pixel_values=pixel_values, pixel_mask=pixel_mask)
+
+        orig_target_sizes = torch.stack(
+            [target["orig_size"] for target in labels], dim=0)
+        results = image_processor.post_process_object_detection(
+            outputs, target_sizes=orig_target_sizes)
+
+        predictions = {target['image_id'].item(
+        ): output for target, output in zip(labels, results)}
+        predictions = prepare_for_coco_detection(predictions)
+        evaluator.update(predictions)
+
+    evaluator.synchronize_between_processes()
+    evaluator.accumulate()
+    evaluator.summarize()
+
+    MODEL_PATH = os.path.join(
+        "C:/Users/nayel/Desktop/Estadia - AVAO191844/Sistema/src/datasets")
+    model.model.save_pretrained(MODEL_PATH)
+
+    model = DetrForObjectDetection.from_pretrained(MODEL_PATH)
+    model.to(DEVICE)
