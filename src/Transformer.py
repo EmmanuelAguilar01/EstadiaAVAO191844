@@ -1,20 +1,22 @@
-import random
 import os
-import supervision as sv
-import cv2
-import torch
-import torchvision
 from transformers import DetrForObjectDetection, DetrImageProcessor
-import matplotlib.pyplot as plt
-from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
-from coco_eval import CocoEvaluator
-from tqdm.notebook import tqdm
+import torch
+import cv2
+import supervision as sv
 import warnings
+import random
+import box_ops
+import numpy as np
+from torch.utils.data import DataLoader
+from coco_eval import CocoEvaluator
+import torchvision
+from tqdm import tqdm
+from pycocotools.coco import COCO
 
 warnings.filterwarnings(
-    "ignore", message="resume_download is deprecated", category=FutureWarning)
+    "ignore", message="`resume_download` is deprecated * ", category=FutureWarning)
 warnings.filterwarnings(
     "ignore", message="The `max_size` parameter is deprecated", category=FutureWarning)
 
@@ -37,8 +39,7 @@ class Dataset:
 dataset = Dataset(
     "C:/Users/nayel/Desktop/Estadia - AVAO191844/hackathone.v2i.coco")
 
-# settings
-ANNOTATION_FILE_NAME = "_annotations.coco.json"
+ANNOTATION_FILE_NAME = "annotations.json"
 TRAIN_DIRECTORY = os.path.join(dataset.location, "train")
 VAL_DIRECTORY = os.path.join(dataset.location, "valid")
 TEST_DIRECTORY = os.path.join(dataset.location, "test")
@@ -118,10 +119,6 @@ class Detr(pl.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        # DETR authors decided to use different learning rate for backbone
-        # you can learn more about it here:
-        # - https://github.com/facebookresearch/detr/blob/3af9fa878e73b6894ce3596450a8d9b89d918ca9/main.py#L22-L23
-        # - https://github.com/facebookresearch/detr/blob/3af9fa878e73b6894ce3596450a8d9b89d918ca9/main.py#L131-L139
         param_dicts = [
             {
                 "params": [p for n, p in self.named_parameters() if "backbone" not in n and p.requires_grad]},
@@ -140,10 +137,6 @@ class Detr(pl.LightningModule):
 
 
 def collate_fn(batch):
-    # DETR authors employ various image sizes during training, making it not possible
-    # to directly batch together images. Hence they pad the images to the biggest
-    # resolution in a given batch, and create a corresponding binary pixel_mask
-    # which indicates which pixels are real/which are padding
     pixel_values = [item[0] for item in batch]
     encoding = image_processor.pad(pixel_values, return_tensors="pt")
     labels = [item[1] for item in batch]
@@ -201,33 +194,33 @@ if __name__ == "__main__":
     frame = box_annotator.annotate(
         scene=image, detections=detections, labels=labels)
 
-    batch_size = 4
-    num_workers = 4
-
     TRAIN_DATALOADER = DataLoader(
-        dataset=TRAIN_DATASET, collate_fn=collate_fn, batch_size=batch_size, shuffle=True, num_workers=num_workers)
+        dataset=TRAIN_DATASET, collate_fn=collate_fn, batch_size=4, shuffle=True)
     VAL_DATALOADER = DataLoader(
-        dataset=VAL_DATASET, collate_fn=collate_fn, batch_size=batch_size, num_workers=num_workers)
+        dataset=VAL_DATASET, collate_fn=collate_fn, batch_size=4)
     TEST_DATALOADER = DataLoader(
-        dataset=TEST_DATASET, collate_fn=collate_fn, batch_size=batch_size, num_workers=num_workers)
+        dataset=TEST_DATASET, collate_fn=collate_fn, batch_size=4)
 
     model = Detr(lr=1e-4, lr_backbone=1e-5, weight_decay=1e-4)
 
     batch = next(iter(TRAIN_DATALOADER))
-    outputs = model(
-        pixel_values=batch['pixel_values'], pixel_mask=batch['pixel_mask'])
+    outputs = model(pixel_values=batch['pixel_values'],
+                    pixel_mask=batch['pixel_mask'])
 
     outputs.logits.shape
 
     # settings
-    MAX_EPOCHS = 5
+    MAX_EPOCHS = 20
 
-    # pytorch_lightning < 2.0.0
-    # trainer = Trainer(gpus=1, max_epochs=MAX_EPOCHS, gradient_clip_val=0.1, accumulate_grad_batches=8, log_every_n_steps=5)
     trainer = Trainer(devices=1, accelerator="cpu", max_epochs=MAX_EPOCHS,
                       gradient_clip_val=0.1, accumulate_grad_batches=8, log_every_n_steps=5)
-    # pytorch_lightning >= 2.0.0
+
     trainer.fit(model)
+
+    CHECKP_DIR = "C:\\Users\\nayel\\Desktop\\Estadia - AVAO191844\\Sistema\\src\\Checkpoints"
+    CHECKPOINT_PATH = os.path.join(CHECKP_DIR, "PuntoGuardadoTrans.ckpt")
+
+    trainer.save_checkpoint(CHECKPOINT_PATH)
 
     model.to(DEVICE)
 
@@ -255,8 +248,6 @@ if __name__ == "__main__":
         scene=image.copy(), detections=detections, labels=labels)
 
     print('ground truth')
-    plt.savefig(plt.savefig())
-    sv.show_frame_in_notebook(frame, (16, 16))
 
     # inference
     with torch.no_grad():
@@ -282,8 +273,6 @@ if __name__ == "__main__":
         scene=image.copy(), detections=detections, labels=labels)
 
     print('detections')
-    plt.savefig(plt.savefig())
-    sv.show_frame_in_notebook(frame, (16, 16))
 
     def convert_to_xywh(boxes):
         xmin, ymin, xmax, ymax = boxes.unbind(1)
@@ -340,8 +329,8 @@ if __name__ == "__main__":
     evaluator.accumulate()
     evaluator.summarize()
 
-    MODEL_PATH = os.path.join(
-        "C:/Users/nayel/Desktop/Estadia - AVAO191844/Sistema/src/datasets")
+    MODEL_PATH = (
+        r"C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Pesos")
     model.model.save_pretrained(MODEL_PATH)
 
     model = DetrForObjectDetection.from_pretrained(MODEL_PATH)
