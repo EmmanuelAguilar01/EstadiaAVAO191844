@@ -1,13 +1,12 @@
 import os
+import warnings
+import random
+import supervision as sv
 from transformers import DetrForObjectDetection, DetrImageProcessor
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
 import torch
 import cv2
-import supervision as sv
-import warnings
-import random
-import box_ops
 import numpy as np
 from torch.utils.data import DataLoader
 from coco_eval import CocoEvaluator

@@ -4,3 +4,4 @@ src/__pycache__/**
 src/Checkpoints/**
 src/lightning_logs/**
 src/Pesos/**
+src/Datasets/**
