@@ -67,10 +67,14 @@ $(document).ready(function() {
         <div class="form-floating">
           <input type="email" class="form-control" id="floatingInput" name="correo" placeholder="name@example.com">
           <label for="floatingInput">Correo Electrónico</label>
+        </div><br>
+        <div>
+            <button class="btn btn-primary w-100 py-2" type="submit">Recuperar</button>
+        </div><br>
+        <div>
+            <button class="btn btn-secondary w-100 py-2" type="button" onclick="location.href='{{ url_for('login') }}'">Cancelar</button>
         </div>
-        <button class="btn btn-primary w-100 py-2" type="submit">Recuperar</button>
-        <button class="btn btn-secondary w-100 py-2" type="button" onclick="location.href='{{ url_for('login') }}'">Cancelar</button>
-      </form>
+        </form>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" 

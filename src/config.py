@@ -16,12 +16,14 @@ class ConfiguracionDesarrollo(Configuracion):
 
 # Configuración para un servidor web y la recuperación de contraseña
 class CodigoRecuperacion(Configuracion):
-    MAIL_SERVER = 'smtp.gmail.net'
-    MAIL_PORT = 465
-    MAIL_USE_TLS = False
-    MAIL_USE_SSL = True
-    MAIL_USERNAME = 'emmanuel.agva@gmail.com'
-    MAIL_PASSWORD = 'uvdo dcck clve mjvh'
+    DEBUG = True
+    MAIL_SERVER = 'smtp-mail.outlook.com'
+    MAIL_PORT = 587
+    MAIL_USE_TLS = True
+    MAIL_USE_SSL = False
+    MAIL_USERNAME = 'r-emmanuel_n@hotmail.com'
+    MAIL_PASSWORD = 'exvcpiyrdnmhbpic'
+    MAIL_DEFAULT_SENDER = 'Estadia_AVAO191844@Emmanuel.com'
 
 
 configuracion = {

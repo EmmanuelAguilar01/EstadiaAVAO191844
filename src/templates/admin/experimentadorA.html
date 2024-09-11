@@ -2,14 +2,15 @@
 {% block Titulo %}Experimentador{% endblock %}
 {% block Cuerpo %}
 <h1 id="Cab">Experimentador Administrador</h1>
-<form action="/agregarBasura" method="POST">
+<form action="/EjecExperimentador" method="POST" enctype="multipart/form-data">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 <br>
 <div class="UnaTabla">
     <table id="Tabla">
         <thead>
             <tr>
-                <td>Nombre</td>
+                <td>Nombre Dataset</td>
+                <td>Tecnologia</td>
                 <td>Formato</td>
                 <td>Imagenes</td>
                 <td>Usuario</td>
@@ -18,53 +19,92 @@
             </tr>
         </thead>
         <tbody>
-            {% for basura in basuras %}
+            {% for data in datas %}
             <tr>
-                <td >{{ basura.1 }}</td>
-                <td >{{ basura.2 }}</td>
-                <td >{{ basura.3 }}</td>
-                <td >{{ basura.4 }}</td>
+                <td >{{ data.0 }}</td>
+                <td >{{ data.5 }}</td>
+                <td >{{ data.1 }}</td>
+                <td >{{ data.2 }}</td>
+                <td >{{ data.3 }}</td>
+                <td >{{ data.4 }}</td>
                 <td >
-                    <a class="BotonEditar" type="submit" href="/editarBasuraA/{{ basura.1 }}" class="BotonEditar">
+                    <a class="BotonEditar" type="submit" href="/editarDataset/{{ data.0 }}" class="BotonEditar">
                         <div class="IEditar">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
                                 <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
                             </svg>
                         </div>
                     </a>
-                    <a class="BotonEliminar" type="submit" href="/eliminarBasuraA/{{ basura.1 }}" class="BotonEliminar">
+                    <a class="BotonEliminar" type="submit" href="/eliminarDataset/{{ data.0 }}" class="BotonEliminar">
                         <div class="IEliminar">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
                                 <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
                             </svg>
                         </div>
                     </a>
+                        <label class="radio-button">
+                          <input type="radio" name="option" id="seleccion-{{ data.0 }}">
+                          <div class="radio-circle"></div>
+                        </label>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+
 <br>
-<div class="Tres-Columnas">
-    <div class="Primera">
-        <b>Tecnología a Utilizar:</b>
-        <br>
+<div class="container">
+    <b>Tecnología a Utilizar:</b><br><br>
+    <div class="tabs">
         <input type="radio" id="YOLO" name="Tecnologia" value="YOLO">
-        <label for="opcion1">YOLO</label><br>
-      
-        <input type="radio" id="TRANS" name="Tecnologia" value="TRANS">
-        <label for="opcion2">Transformers</label><br>
+        <label class="tab" for="YOLO">YOLOV5</label>
+        <input type="radio" id="TRANS" name="Tecnologia" value="TRANS" checked>
+        <label class="tab" for="TRANS">DETR</label>
+        <span class="glider"></span>
     </div>
-    <div class="Segunda">
-        <b>Épocas:</b><br>
-        <input type="text" name="Epocas" id="Epocas">
+</div><br><br>
+
+<div class="cuatro-Columnas">
+        <div class="Form">
+            <b>Épocas:</b><br>
+            <input type="number" class="selecNum" name="epocas" id="Epocas" min="5" max="100" step="1" value="15">
+        </div>
+        <div class="Form">
+            <b>Batch Size:</b><br>
+            <input type="number" class="selecNum" name="batch_size" id="Batch" min="2" max="100" step="2" value="16">
+        </div>
+        <div class="Form">
+            <b>Confianza (Threshold):</b><br>
+            <input type="number" class="selecNum" name="threshold" id="Threshold" min="0.1" max="0.9" step="0.1" value="0.2">
+        </div>
+        <div class="Form">
+            <b>IOU Threshold:</b><br>
+            <input type="number" class="selecNum" name="iou_threshold" id="IOUThreshold" min="0.1" max="0.9" step="0.1" value="0.6">
+        </div>
+</div><br><br>
+    <div class="dos-Columnas">
+        <div class="Form">
+            <b>Tamaño de imagen (px):</b><br>
+            <input type="number" class="selecNum" name="imgsz" id="imgsz" min="100" max="1000" step="1" value="416" disabled>
+        </div>
+        <div class="Form">
+            <b>Nombre:</b><br>
+            <input type="text" class="Formulario" name="name" id="name" placeholder="Directorio para guardar resultados" disabled>
+        </div>
+    </div><br>
+    <div class="dos-Columnas">
+        <div class="Form">
+            <b>Archivo de configuración .YAML:</b><br>
+            <input type="file" class="Formulario" name="cfg" id="cfg" placeholder="Dirección completa del archivo custom_data.yaml" disabled>
+        </div>
+        <div class="Form">
+            <b>Archivo "data" .YAML:</b><br>
+            <input type="file"  class="Formulario" name="data" id="data" placeholder="Dirección completa del archivo data.yaml" disabled>
+        </div>
     </div>
-    <div class="Tercera">
-        <b>Batch Size:</b><br>
-        <input type="text" name="Batch" id="Batch">
-    </div>
-</div>
+    </div><br><br>
+
 <!--CONTENEDOR DE BOTONES-->
 <div class="contenedor-botones2">
     <button class="BotonAceptar" type="submit">
@@ -85,8 +125,53 @@
         <span>Agregar</span>
     </button>
 </div>
+<br>
 </form>
 <footer id="Pie">
 Estadia - Aguilar Vargas Antonio Emmanuel - AVAO191844
 </footer>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Obtener los campos y radio buttons
+        const tecnologiaYolo = document.querySelector('input[name="Tecnologia"][value="YOLO"]');
+        const tecnologiaTrans = document.querySelector('input[name="Tecnologia"][value="TRANS"]');
+        const camposYolo = ['imgsz', 'data', 'cfg', 'name'];
+
+        // Habilitar los campos de YOLO cuando se selecciona la opción de YOLO
+        tecnologiaYolo.addEventListener('change', function() {
+            if (this.checked) {
+                camposYolo.forEach(function(campo) {
+                    document.getElementById(campo).disabled = false;
+                });
+            }
+        });
+
+        // Deshabilitar los campos de YOLO cuando se selecciona la opción de TRANS
+        tecnologiaTrans.addEventListener('change', function() {
+            if (this.checked) {
+                camposYolo.forEach(function(campo) {
+                    document.getElementById(campo).disabled = true;
+                });
+            }
+        });
+
+        // Verificar los campos antes de enviar el formulario
+        document.querySelector('form').addEventListener('submit', function(event) {
+            const tecnologia = document.querySelector('input[name="Tecnologia"]:checked').value;
+            if (tecnologia === "YOLO") {
+                // Verifica si los campos de YOLO están habilitados
+                const imgsz = document.getElementById('imgsz');
+                const data = document.getElementById('data');
+                const cfg = document.getElementById('cfg');
+                const name = document.getElementById('name');
+
+                if (imgsz.disabled || data.disabled || cfg.disabled || name.disabled) {
+                    alert('Los campos de YOLO no están habilitados correctamente.');
+                    event.preventDefault(); // Evita que el formulario se envíe
+                }
+            }
+        });
+    });
+</script>
+
 {% endblock %}

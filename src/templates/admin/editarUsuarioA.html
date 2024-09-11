@@ -16,10 +16,10 @@
             <br><br>
             <div class="Form">
                 <input type="email" class="Formulario" name="correo" placeholder="CORREO" value="{{ correo }}">
-                <input type="text" class="Formulario" name="contra" placeholder="CONTRASEÑA" value="">
+                <input type="password" class="Formulario" name="contra" placeholder="CONTRASEÑA">
             </div>
             <br>
-                <input type="date" class="Formulario" name="FechaRegistro" placeholder="FechaRegistro" value="{{ fechaRegistro }}">
+                <input type="date" class="Formulario" name="FechaRegistro" placeholder="FechaRegistro" value="{{ fechaRegistro.strftime('%Y-%m-%d') }}">
             <br>
             <div class="Form">
                 <input type="text" class="Formulario" name="intereses" placeholder="INTERESES" value="{{ intereses }}">

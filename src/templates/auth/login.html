@@ -49,7 +49,7 @@
                       </div>
                   </div>
                   </div>
-              </div>
+                </div>
               
               <script>
               $(document).ready(function() {
@@ -58,7 +58,7 @@
                       $('#flashModal').modal('show');
                       setTimeout(function() {
                       $('#flashModal').modal('hide');
-                      }, 5000);
+                      }, 3000);
                   {% endif %}
                   {% endwith %}
               });
@@ -72,7 +72,23 @@
           <input type="password" class="form-control" id="floatingPassword" name ="contra" placeholder="Password">
           <label for="floatingPassword">Contraseña</label>
         </div>
-        <button class="btn btn-primary w-100 py-2" type="submit">Iniciar Sesión</button>
+        <button class="cssbuttons-io-button">
+          INICIAR SESIÓN
+          <div class="icon">
+            <svg
+              height="24"
+              width="24"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M0 0h24v24H0z" fill="none"></path>
+              <path
+                d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z"
+                fill="currentColor"
+              ></path>
+            </svg>
+          </div>
+        </button>
         <p>¿No tienes cuenta?</p>
         <p>Crea tu cuenta nueva <a link rel="stylesheet" href="{{ url_for('new') }}">AQUI</a></p>
         <br>

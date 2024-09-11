@@ -6,48 +6,33 @@
         }
 {% endblock %}
 {% block Cuerpo %}
-    <h1 id="Cab">Gestión dataset para experimentar <br>Administrador</h1>
+    <h1 id="Cab">Editar dataset para experimentar <br>Administrador</h1>
     <div class="contenedor-principal">
-        <form action="/agregarDataset" method="POST" enctype="multipart/form-data">
+        <form action="/modificarDataset/{{ nombreDataset }}" method="POST" enctype="multipart/form-data">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="parte-superior">
-                <div class="contenedor-file">
-                    <h4>Elige un dataset:</h4>
-                    <input type="file" class="Formulario" name="Dataset[]" id="Dataset" webkitdirectory multiple>
-                </div><br>
                 <div class="contenedor-text">
                     <h4>Nombre del dataset:</h4>
-                    <input type="text" class="Formulario" id="nombre-Dataset" name="nombreDataset" />
+                    <input type="text" class="Formulario" id="nombre-Dataset" name="nombreDataset" value="{{ nombreDataset }}"/>
                 </div><br>
                 <div class="contenedor-tecnologia-formato">
                     <div class="tecnologia"><b>Tecnología a utilizar:</b><br>
-                        <input type="radio" id="Tecnologia" name="Tecnologia" value="YOLO" checked />
+                        <input type="radio" id="Tecnologia" name="Tecnologia" value="YOLO" {% if Tecnologia == 'YOLO' %}checked{% endif %}/>
                             <label for="formato-yolo">YOLO</label>
-                        <input type="radio" id="Tecnologia" name="Tecnologia" value="Transformer" />
+                        <input type="radio" id="Tecnologia" name="Tecnologia" value="Transformer" {% if Tecnologia == 'Transformer' %}checked{% endif %}/>
                             <label for="formato-transformer">Transformer</label>
                     </div>
                     <div class="formato"><b>Formato de imágenes:</b><br>
-                        <input type="radio" id="opcion1" name="Formato" value="JPG" checked>
+                        <input type="radio" id="opcion1" name="Formato" value="JPG" {% if Formato == 'JPG' %}checked{% endif %}>
                         <label for="opcion1">JPG</label><br>
-                        <input type="radio" id="opcion2" name="Formato" value="PNG">
+                        <input type="radio" id="opcion2" name="Formato" value="PNG" {% if Formato == 'PNG' %}checked{% endif %}>
                         <label for="opcion2">PNG</label><br>
                     </div>
                 </div> <br>
-                    <button type="submit" id="validarDataset" name="accion" value="validar">Validar Dataset</button>
                     <!-- Contenedor para mensajes -->
                     <div id="resultadoValidacion">
                         {{ mensaje_validacion }}
                     </div>
-            </div><br>
-            <div class="parte-inferior">
-                <div class="contenedor-tipo-basura">
-                    <label for="tipoBasura">Selecciona el tipo de basura:</label><br>
-                    <select id="tipoBasura" name="tipoBasura">
-                        {% for tipo in tipos %}
-                            <option value="{{ tipo[0] }}">{{ tipo[0] }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
             </div><br>
             <!--CONTENEDOR DE BOTONES-->
             <div class="contenedor-botones2">

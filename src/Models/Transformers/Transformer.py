@@ -1,7 +1,7 @@
 import os
 import warnings
 import random
-import supervision as sv
+import supervision
 from transformers import DetrForObjectDetection, DetrImageProcessor
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
@@ -13,17 +13,17 @@ from coco_eval import CocoEvaluator
 import torchvision
 from tqdm import tqdm
 from pycocotools.coco import COCO
+import argparse
 
 warnings.filterwarnings(
     "ignore", message="`resume_download` is deprecated * ", category=FutureWarning)
 warnings.filterwarnings(
     "ignore", message="The `max_size` parameter is deprecated", category=FutureWarning)
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 # settings
 DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 CHECKPOINT = 'facebook/detr-resnet-50'
-CONFIDENCE_TRESHOLD = 0.5
-IOU_TRESHOLD = 0.8
 
 image_processor = DetrImageProcessor.from_pretrained(CHECKPOINT)
 model = DetrForObjectDetection.from_pretrained(CHECKPOINT)
@@ -36,9 +36,9 @@ class Dataset:
 
 
 dataset = Dataset(
-    "C:/Users/nayel/Desktop/Estadia - AVAO191844/hackathone.v2i.coco")
+    r"C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Datasets\hackathone.v2i.coco")
 
-ANNOTATION_FILE_NAME = "annotations.json"
+ANNOTATION_FILE_NAME = "_annotations.coco.json"
 TRAIN_DIRECTORY = os.path.join(dataset.location, "train")
 VAL_DIRECTORY = os.path.join(dataset.location, "valid")
 TEST_DIRECTORY = os.path.join(dataset.location, "test")
@@ -147,6 +147,16 @@ def collate_fn(batch):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--epocas", type=int)
+    parser.add_argument("--batch_size", type=int)
+    parser.add_argument("--threshold", type=float)
+    parser.add_argument("--iou_threshold", type=float)
+    args = parser.parse_args()
+    
+    CONFIDENCE_TRESHOLD = args.threshold
+    IOU_TRESHOLD = args.iou_threshold
+
     TRAIN_DATASET = CocoDetection(
         image_directory_path=TRAIN_DIRECTORY,
         image_processor=image_processor,
@@ -176,7 +186,7 @@ if __name__ == "__main__":
     image = cv2.imread(image_path)
 
     # annotate
-    detections = sv.Detections.from_coco_annotations(
+    detections = supervision.Detections.from_coco_annotations(
         coco_annotation=annotations)
 
     # we will use id2label function for training
@@ -189,18 +199,18 @@ if __name__ == "__main__":
         in detections
     ]
 
-    box_annotator = sv.BoxAnnotator()
+    box_annotator = supervision.BoxAnnotator()
     frame = box_annotator.annotate(
         scene=image, detections=detections, labels=labels)
 
     TRAIN_DATALOADER = DataLoader(
-        dataset=TRAIN_DATASET, collate_fn=collate_fn, batch_size=4, shuffle=True)
+        dataset=TRAIN_DATASET, collate_fn=collate_fn, batch_size=args.batch_size, shuffle=True, num_workers=4)
     VAL_DATALOADER = DataLoader(
-        dataset=VAL_DATASET, collate_fn=collate_fn, batch_size=4)
+        dataset=VAL_DATASET, collate_fn=collate_fn, batch_size=args.batch_size)
     TEST_DATALOADER = DataLoader(
-        dataset=TEST_DATASET, collate_fn=collate_fn, batch_size=4)
+        dataset=TEST_DATASET, collate_fn=collate_fn, batch_size=args.batch_size)
 
-    model = Detr(lr=1e-4, lr_backbone=1e-5, weight_decay=1e-4)
+    model = Detr(lr=0.0005, lr_backbone=0.0001, weight_decay=0.01)
 
     batch = next(iter(TRAIN_DATALOADER))
     outputs = model(pixel_values=batch['pixel_values'],
@@ -209,7 +219,7 @@ if __name__ == "__main__":
     outputs.logits.shape
 
     # settings
-    MAX_EPOCHS = 20
+    MAX_EPOCHS = args.epocas
 
     trainer = Trainer(devices=1, accelerator="cpu", max_epochs=MAX_EPOCHS,
                       gradient_clip_val=0.1, accumulate_grad_batches=8, log_every_n_steps=5)
@@ -226,7 +236,7 @@ if __name__ == "__main__":
     # utils
     categories = TEST_DATASET.coco.cats
     id2label = {k: v['name'] for k, v in categories.items()}
-    box_annotator = sv.BoxAnnotator()
+    box_annotator = supervision.BoxAnnotator()
 
     # select random image
     image_ids = TEST_DATASET.coco.getImgIds()
@@ -240,7 +250,7 @@ if __name__ == "__main__":
     image = cv2.imread(image_path)
 
     # annotate
-    detections = sv.Detections.from_coco_annotations(
+    detections = supervision.Detections.from_coco_annotations(
         coco_annotation=annotations)
     labels = [f"{id2label[class_id]}" for _, _, class_id, _ in detections]
     frame = box_annotator.annotate(
@@ -264,8 +274,8 @@ if __name__ == "__main__":
         )[0]
 
     # annotate
-    detections = sv.Detections.from_transformers(
-        transformers_results=results).with_nms(threshold=0.5)
+    detections = supervision.Detections.from_transformers(
+        transformers_results=results).with_nms(threshold=IOU_TRESHOLD)
     labels = [f"{id2label[class_id]} {confidence:.2f}" for _,
               confidence, class_id, _ in detections]
     frame = box_annotator.annotate(
@@ -329,7 +339,7 @@ if __name__ == "__main__":
     evaluator.summarize()
 
     MODEL_PATH = (
-        r"C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Pesos")
+        r"C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Pesos\Transformers")
     model.model.save_pretrained(MODEL_PATH)
 
     model = DetrForObjectDetection.from_pretrained(MODEL_PATH)

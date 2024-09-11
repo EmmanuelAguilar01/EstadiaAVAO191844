@@ -1,11 +1,64 @@
 /*Apartir de aqui se hace las configuraciones de la pagina de inicio de sesión o login*/
 .inicio {
-  background-image: url(/static/img/inicio.jpg);
-  background-repeat: no-repeat;
-  background-size: cover;
+  background-color: #111521
+}
+
+.cssbuttons-io-button {
+  background: #6a7182;
+  color: #111521;
+  font-family:'TodoN';
+  padding: 0.35em;
+  padding-left: 1.2em;
+  font-size: 17px;
+  font-weight: 500;
+  border-radius: 0.9em;
+  border: none;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  box-shadow: inset 0 0 1.6em -0.6em #714da6;
+  overflow: hidden;
+  position: relative;
+  height: 2.8em;
+  padding-right: 3.3em;
+  cursor: pointer;
+}
+
+.cssbuttons-io-button .icon {
+  background: #111521;
+  margin-left: 1em;
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.2em;
+  width: 2.2em;
+  border-radius: 0.7em;
+  box-shadow: 0.1em 0.1em 0.6em 0.2em #7b52b9;
+  right: 0.3em;
+  transition: all 0.3s;
+}
+
+.cssbuttons-io-button:hover .icon {
+  width: calc(100% - 0.6em);
+}
+
+.cssbuttons-io-button .icon svg {
+  width: 1.1em;
+  transition: transform 0.3s;
+  color: #111521;
+}
+
+.cssbuttons-io-button:hover .icon svg {
+  transform: translateX(0.1em);
+}
+
+.cssbuttons-io-button:active .icon {
+  transform: scale(0.95);
 }
 
 body {
+  background-color: #111521;
   height: 100%;
   text-align: center;
 }
@@ -108,21 +161,83 @@ body {
 .bd-mode-toggle .dropdown-menu .active .bi {
   display: block !important;
 }
+/*CONFIGURACION RADIO TECNOLOGIA*/
+.tabs {
+  display: inline-flex;
+  position: relative;
+  background-color: #fff;
+  box-shadow: 0 0 1px 0 rgba(24, 94, 224, 0.15), 0 6px 12px 0 rgba(24, 94, 224, 0.15);
+  padding: 10px;
+  border-radius: 99px;
+}
+
+.tabs * {
+  z-index: 2;
+}
+
+.container input[type="radio"] {
+  display: none;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  width: 85px;
+  font-family: TodoC;
+  font-size: 18px;
+  color: black;
+  font-weight: 500;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: color 0.15s ease-in;
+}
+
+.container input[type="radio"]:checked + label {
+  color: #185ee0;
+}
+
+.container input[id="YOLO"]:checked ~ .glider {
+  transform: translateX(0);
+}
+
+.container input[id="TRANS"]:checked ~ .glider {
+  transform: translateX(132%);
+}
+
+.glider {
+  position: absolute;
+  display: flex;
+  height: 35px;
+  width: 70px;
+  background-color: #e6eef9;
+  z-index: 1;
+  border-radius: 99px;
+  transition: 0.25s ease-out;
+}
+
+@media (max-width: 700px) {
+ 
+  .tabs {
+    transform: scale(0.6);
+  }
+}
 
 /****************************************FUENTES****************************************/
 @font-face {
   font-family: TodoN;
-  src: url(../fonts/coolveticaNormal.otf);
+  src: url('/static/fonts/Montserrat-ExtraLight.ttf');
 }
 @font-face {
   font-family: TodoC;
-  src: url(../fonts/coolveticaCursiva.otf);
-}
-@font-face {
-  font-family: TodoC;
-  src: url(../fonts/coolveticaDelgada.otf);
+  src: url('/static/fonts/Montserrat-SemiBold.ttf');
 }
 /****************************************ESTILOS DE SECCIONES****************************************/
+b{
+  font-family: TodoN;
+  font-size: 20px;
+}
 a{
   z-index: 3;
 }
@@ -136,7 +251,7 @@ a{
 }
 #Cab{
   align-items: center;
-  font-family: TodoN;
+  font-family: TodoC;
   font-size: 30px;
   color: rgb(255, 255, 255);
 }
@@ -147,29 +262,154 @@ a{
   color: rgb(255, 255, 255);
 }
 #Tabla{
-  border: 5px inset #ffe600 ;
+  border-collapse: collapse;
+  border: 5px inset #bbbbbc;
   align-items: center;
   font-family: TodoN;
   font-size: 23px;
-  color: white;
+  color: #111521;
   width:fit-content;
   margin-left: 100px;
   margin-right: 100px;
   border-radius:22px;
 }
+
+#Tabla thead {
+  font-family: TodoC;
+  background-color: #bbbbbc;
+}
+
+#Tabla tbody {
+  background-color: #6a7182;
+}
+
 #Tabla td {
   text-align: center;
   white-space: normal;
 }
-#Tabla thead tr {
+
+#Tabla th {
   text-align: center;
   white-space: normal;
-  background-color: red;
 }
-#BTabla{
-  width:400px;
-  white-space:nowrap;
+#Tabla td, #Tabla th {
+  border: 1px solid #e8eaed; /* Color de las líneas de división */
+  padding: 5px; /* Espacio entre el texto y la línea de división */
+  vertical-align: top; /* Alinea el texto al inicio de la celda */
+  width: 1px; /* Fuerza a la celda a ajustarse al contenido */
+  white-space: nowrap; /* Evita que el texto se ajuste al ancho de la celda */
 }
+/* From Uiverse.io by coding-masala */ 
+.radio-button input[type="radio"] {
+  display: none;
+}
+
+.radio-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #aaa;
+  position: relative;
+  margin-right: 10px;
+}
+
+.radio-circle::before {
+  content: "";
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #ddd;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  transition: all 0.2s ease-in-out;
+}
+
+.radio-button input[type="radio"]:checked + .radio-circle::before {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.radio-button:nth-of-type(1) input[type="radio"]:checked + .radio-circle::before {
+  background-color: #ff6600;
+}
+
+.radio-button:nth-of-type(2) input[type="radio"]:checked + .radio-circle::before {
+  background-color: #ffffff;
+}
+
+.radio-button:nth-of-type(3) input[type="radio"]:checked + .radio-circle::before {
+  background-color: #26be00;
+}
+
+.radio-button:hover .radio-circle {
+  border-color: #555;
+}
+
+.radio-button:hover input[type="radio"]:checked + .radio-circle::before {
+  background-color: #555;
+}
+
+/**************************************FORMULARIO DATASET*******************************************/
+.contenedor-principal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 20px;
+}
+.parte-superior {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 80%;
+}
+.contenedor-file {
+  margin-bottom: 10px;
+}
+
+.contenedor-text {
+  margin-bottom: 10px;
+}
+
+.contenedor-tecnologia-formato {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.tecnologia {
+  display: flex;
+  flex-direction: column;
+}
+
+.formato {
+  display: flex;
+  flex-direction: column;
+}
+
+.parte-inferior {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 80%;
+  margin-top: 20px;
+}
+
+.contenedor-tipo-basura {
+  margin-bottom: 10px;
+}
+
+input::placeholder {
+  font-family: TodoN;
+  font-size: 15px;
+  color: #3f4554; /* Color del texto del placeholder */
+}
+
+input[type="text"] {
+  font-size: 18px; /* Tamaño de letra en píxeles */
+}
+
 /****************************************ESTILOS DE PAGINAS****************************************/
 #PEPE{
   background:black
@@ -192,10 +432,7 @@ a{
   align-items: center;
 }
 #nuevoUsuario{
-  background-image: url(../img/NewUser.jpg);
-  background-repeat: no-repeat;
-  background-size: cover;
-
+  background-color: #111521
 }
 #procesamiento{
   background-image: url(../Pagina/Imagenes/procesador.jpg);
@@ -230,7 +467,7 @@ a{
 
 }
 .Formulario{
-  font-size: 10px;
+  font-size: 18px;
   font-family: TodoN;
   border: solid 2px;
   padding: 15px;
@@ -240,6 +477,16 @@ a{
 .Formulario:focus{
   border-color: blueviolet;
 }
+.selecNum{
+  width: 100px;
+  height: 30px;
+  border: 2px solid;
+  border-radius: 5px;
+  font-size: 18px;
+  font-family: TodoN;
+  text-align: center;
+}
+
 .contenedor-botones2 {
 width: 100%;
 display: grid;
@@ -258,9 +505,17 @@ display: grid;
 grid-template-columns: repeat(4, 1fr);
 gap: 40px;
 }
+.dos-Columnas{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
 .Tres-Columnas {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
+}
+.cuatro-Columnas {
+  display: grid;
+  grid-template-columns:  1fr 1fr 1fr 1fr;
 }
 .UnaTabla {
   display: flex;
@@ -269,9 +524,9 @@ gap: 40px;
 }
 .Contenedor-4 {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2 columnas */
-  grid-template-rows: repeat(2, 1fr); /* 2 filas */
-  gap: 10px; /* Espacio entre celdas (opcional) */
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 10px; 
 }
 /****************************************ESTILOS DE BOTONES 1****************************************/
 .Botones{
@@ -280,7 +535,7 @@ gap: 40px;
   justify-content: center;
   width: 12%;
   height: 40px;
-  background:rgb(185, 48, 38);
+  background:#6a7182;
   color: beige;
   font-family: TodoN;
   font-size: 20px;
@@ -326,7 +581,7 @@ gap: 40px;
   justify-content: center;
   width: 30%;
   height: 40px;
-  background:rgb(185, 48, 38);
+  background:#6a7182;
   color: beige;
   font-family: TodoN;
   font-size: 20px;
@@ -373,7 +628,7 @@ gap: 40px;
   justify-content: center;
   width: 30%;
   height: 40px;
-  background:rgb(185, 48, 38);
+  background: #6a7182;
   color: beige;
   font-family: TodoN;
   font-size: 20px;
@@ -421,7 +676,7 @@ gap: 40px;
   justify-content: center;
   width: 45%;
   height: 40px;
-  background:rgb(185, 48, 38);
+  background:#6a7182;
   color: beige;
   font-family: TodoN;
   font-size: 20px;
@@ -468,7 +723,7 @@ gap: 40px;
   justify-content: center;
   width: 45%;
   height: 40px;
-  background:rgb(185, 48, 38);
+  background:#6a7182;
   color: beige;
   font-family: TodoN;
   font-size: 20px;
@@ -515,7 +770,7 @@ gap: 40px;
   justify-content: center;
   width: 45%;
   height: 40px;
-  background:rgb(185, 48, 38);
+  background:#6a7182;
   color: beige;
   font-family: TodoN;
   font-size: 20px;
@@ -563,7 +818,7 @@ gap: 40px;
   justify-content: center;
   width: 50%;
   height: 60px;
-  background:rgb(185, 48, 38);
+  background:#6a7182;
   color: beige;
   font-family: TodoN;
   font-size: 20px;
@@ -610,7 +865,7 @@ gap: 40px;
   justify-content: center;
   width: 53%;
   height: 40px;
-  background:rgb(185, 48, 38);
+  background:#6a7182;
   color: beige;
   font-family: TodoN;
   font-size: 20px;
@@ -657,7 +912,7 @@ gap: 40px;
   justify-content: center;
   width: 55%;
   height: 60px;
-  background:rgb(185, 48, 38);
+  background:#6a7182;
   color: beige;
   font-family: TodoN;
   font-size: 20px;
@@ -704,7 +959,7 @@ gap: 40px;
   justify-content: center;
   width: 55%;
   height: 60px;
-  background:rgb(185, 48, 38);
+  background:#6a7182;
   color: beige;
   font-family: TodoN;
   font-size: 20px;
@@ -748,7 +1003,7 @@ gap: 40px;
 .navbar {
   font-family: TodoN;
   overflow: hidden;
-  background-color: #4222fa;
+  background-color: #3f4554;
   display: flex;
   justify-content: space-between;
   border-radius: 10px;
@@ -762,7 +1017,10 @@ gap: 40px;
   padding: 14px 16px;
   text-decoration: none;
 }
-
+.navbar a:hover {
+  background-color: #6a7182;
+  border-radius: 10px;
+}
 .content {
   padding: 20px;
 }
@@ -773,7 +1031,7 @@ gap: 40px;
   justify-content: center;
   width: 40px;
   height: 40px;
-  background:rgb(185, 48, 38);
+  background:#6a7182;
   color: beige;
   font-family: TodoN;
   font-size: 20px;
@@ -811,7 +1069,7 @@ gap: 40px;
   justify-content: center;
   width: 40px;
   height: 40px;
-  background:rgb(185, 48, 38);
+  background:#6a7182;
   color: beige;
   font-family: TodoN;
   font-size: 20px;
