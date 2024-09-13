@@ -17,9 +17,9 @@
                 </div><br>
                 <div class="contenedor-text">
                     <h4>Nombre del dataset:</h4>
-                    <input type="text" class="Formulario" id="nombre-Dataset" name="nombreDataset" />
+                    <input type="text" class="Formulario" id="nombre-Dataset" name="nombreDataset" value="{{ request.form.get('nombreDataset', '') }}" />
                 </div><br>
-                <div class="contenedor-tecnologia-formato">
+                <div class="contenedor-tecnologia-formato-tipo">
                     <div class="tecnologia"><b>Tecnología a utilizar:</b><br>
                         <input type="radio" id="Tecnologia" name="Tecnologia" value="YOLO" checked />
                             <label for="formato-yolo">YOLO</label>
@@ -27,28 +27,20 @@
                             <label for="formato-transformer">Transformer</label>
                     </div>
                     <div class="formato"><b>Formato de imágenes:</b><br>
-                        <input type="radio" id="opcion1" name="Formato" value="JPG" checked>
+                        <input type="radio" id="opcion1" name="Formato" value=".jpg" checked>
                         <label for="opcion1">JPG</label><br>
-                        <input type="radio" id="opcion2" name="Formato" value="PNG">
+                        <input type="radio" id="opcion2" name="Formato" value=".png">
                         <label for="opcion2">PNG</label><br>
                     </div>
-                </div> <br>
-                    <button type="submit" id="validarDataset" name="accion" value="validar">Validar Dataset</button>
-                    <!-- Contenedor para mensajes -->
-                    <div id="resultadoValidacion">
-                        {{ mensaje_validacion }}
+                    <div class="tipo"><b>Selecciona el tipo de basura:</b><br>
+                        <select id="tipoBasura" name="tipoBasura">
+                            {% for tipo in tipos %}
+                                <option value="{{ tipo[0] }}" {% if request.form.get('tipoBasura') == tipo[0] %}selected{% endif %}>{{ tipo[0] }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
-            </div><br>
-            <div class="parte-inferior">
-                <div class="contenedor-tipo-basura">
-                    <label for="tipoBasura">Selecciona el tipo de basura:</label><br>
-                    <select id="tipoBasura" name="tipoBasura">
-                        {% for tipo in tipos %}
-                            <option value="{{ tipo[0] }}">{{ tipo[0] }}</option>
-                        {% endfor %}
-                    </select>
                 </div>
-            </div><br>
+            </div>
             <!--CONTENEDOR DE BOTONES-->
             <div class="contenedor-botones2">
                 <button type="submit" class="BotonAceptar" name="accion" value="guardar">
@@ -72,6 +64,18 @@
             </div>
             <br>
         </form>
+        <script>
+            document.getElementById('Dataset').addEventListener('change', function(event) {
+                // Obtener la ruta completa del primer archivo seleccionado
+                let fullPath = event.target.files[0].webkitRelativePath;
+                
+                // Extraer el nombre del directorio
+                let dirName = fullPath.split('/')[0];
+                
+                // Mostrar el nombre del directorio en el campo de texto
+                document.getElementById('nombre-Dataset').value = dirName;
+            });
+        </script>
     </div>
     <footer id="Pie">
     Estadia - Aguilar Vargas Antonio Emmanuel - AVAO191844

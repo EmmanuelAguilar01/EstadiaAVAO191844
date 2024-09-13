@@ -14,8 +14,6 @@ from Models.ModeloUsuario import ModeloUsuario
 import subprocess
 import threading
 
-# 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
-
 # Inicialización de la Aplicación
 app = Flask(__name__)
 
@@ -27,6 +25,8 @@ app.config.update(configuracion['codigoR'].__dict__)
 Correo = Mail(app)
 # Creación del Token de seguridad
 Token = CSRFProtect()
+Token.init_app(app)
+
 # Conexion a la base de datos
 BaseDatos = MySQL(app)
 
@@ -151,18 +151,18 @@ def nuevoUsuarioA():
 def experimentadorA():
     cursor = BaseDatos.connection.cursor()
     cursor.execute("""
-        SELECT 
-            d.NombreDataExp, 
-            d.FormatoExp, 
-            d.Imagenes, 
-            u.Nombre, 
+        SELECT
+            d.NombreDataExp,
+            d.FormatoExp,
+            d.Imagenes,
+            u.Nombre,
             tb.TipoBasura,
             d.Tecnologia
-        FROM 
+        FROM
             dataexperiment d
-        INNER JOIN 
+        INNER JOIN
             Usuarios u ON d.idUsuarios = u.idUsuarios
-        INNER JOIN 
+        INNER JOIN
             TiposBasura tb ON d.idTiposBasura = tb.idTiposBasura
     """)
 
@@ -279,38 +279,128 @@ def CrudDatasetA():
 
 @app.route('/agregarDataset', methods=['POST'])
 def agregarDataset():
-    accion = request.form.get('accion')
-
-    if accion == 'validar':
-        return validar_dataset()
-    elif accion == 'guardar':
-        return guardar_dataset()
-    else:
-        return "Acción no reconocida"
-
-
-def validar_dataset():
-    # Obtener los archivos subidos
     archivos = request.files.getlist("Dataset[]")
-
-    # Obtener la carpeta seleccionada por el usuario
     nombre_dataset = request.form.get('nombreDataset')
-
-    # Obtener la tecnología seleccionada por el usuario
     tecnologia = request.form.get('Tecnologia')
+    formato = request.form.get('Formato')
+    tipo_basura = request.form.get('tipoBasura')
 
     # Verificar si los campos están vacíos
-    if not all([nombre_dataset, archivos, tecnologia]):
+    if not all([archivos, nombre_dataset, tecnologia, formato, tipo_basura]):
         flash('Por favor, complete todos los campos')
         return redirect(url_for('CrudDatasetA'))
 
+    # Realiza la validación del dataset en función de la tecnología
+    validacion_fallida = False
+
+    if tecnologia == "YOLO":
+        validacion_fallida, mensaje_error, cantidad_total = validar_estructura_yolo(
+            archivos, formato)
+    elif tecnologia == "Transformer":
+        validacion_fallida, mensaje_error, cantidad_total = validar_estructura_transformer(
+            archivos, formato)
+
+    # Si la validación falla, regresar a la página y mantener los datos
+    if validacion_fallida:
+        flash(mensaje_error)
+        return redirect(url_for('CrudDatasetA'))
+
+    # Guardar los archivos en el directorio configurado
+    if archivos:
+        ruta = archivos[0]
+        if ruta and ruta.filename != '':
+            # Extraer la ruta base (directorio) del primer archivo
+            ruta_base = os.path.dirname(ruta.filename)
+
+            # Construir la ruta completa donde se almacenará el directorio
+            ruta_guardado = os.path.join(
+                app.config['UPLOAD_FOLDER'], ruta_base)
+
+    # Guardar los datos en la base de datos
+    guardar_dataset(nombre_dataset, ruta_guardado, formato,
+                    tecnologia, tipo_basura, cantidad_total)
+
+    flash("El dataset '{nombre_dataset}' ha sido guardado correctamente.")
+    return redirect(url_for('experimentadorA'))
+
+
+def validar_estructura_yolo(archivos, formato):
     # Diccionario para almacenar las rutas de archivos por carpetas para YOLO
     dataset_estructura_yolo = {
         "train": {"labels": [], "images": []},
         "test": {"labels": [], "images": []},
         "valid": {"labels": [], "images": []}
     }
+    error_formato = False
+    error_carpeta = False
+    formato_correcto = True
 
+    # Procesar todos los archivos recibidos
+    for archivo in archivos:
+        # Obtener la ruta relativa del archivo dentro del directorio
+        ruta_relativa = archivo.filename
+
+        if 'train/' in ruta_relativa:
+            if '/labels/' in ruta_relativa and ruta_relativa.endswith('.txt'):
+                dataset_estructura_yolo['train']['labels'].append(
+                    ruta_relativa)
+            elif '/images/' in ruta_relativa:
+                if ruta_relativa.endswith(formato):
+                    dataset_estructura_yolo['train']['images'].append(
+                        ruta_relativa)
+                else:
+                    error_formato = True
+                    formato_correcto = False
+
+        elif 'test/' in ruta_relativa:
+            if '/labels/' in ruta_relativa and ruta_relativa.endswith('.txt'):
+                dataset_estructura_yolo['test']['labels'].append(ruta_relativa)
+            elif '/images/' in ruta_relativa:
+                if ruta_relativa.endswith(formato):
+                    dataset_estructura_yolo['test']['images'].append(
+                        ruta_relativa)
+                else:
+                    error_formato = True
+                    formato_correcto = False  # Si encuentra un formato incorrecto
+
+        elif 'valid/' in ruta_relativa:
+            if '/labels/' in ruta_relativa and ruta_relativa.endswith('.txt'):
+                dataset_estructura_yolo['valid']['labels'].append(
+                    ruta_relativa)
+            elif '/images/' in ruta_relativa:
+                if ruta_relativa.endswith(formato):
+                    dataset_estructura_yolo['valid']['images'].append(
+                        ruta_relativa)
+                else:
+                    error_formato = True
+                    formato_correcto = False  # Si encuentra un formato incorrecto
+
+    # Si el formato es incorrecto, regresamos el error
+    if error_formato:
+        return True, f"Error: No hay ninguna imagen con formato {formato}, Valida nuevamente tu dataset", ""
+
+    # Validar si las carpetas tienen la estructura necesaria
+    for carpeta, contenido in dataset_estructura_yolo.items():
+        if not contenido['labels'] or not contenido['images']:
+            error_carpeta = True
+
+    # Si hay errores en las carpetas, regresamos el error correspondiente
+    if error_carpeta:
+        return True, f"Error: La carpeta {carpeta} no contiene los archivos necesarios para YOLO", ""
+
+    # Contar imágenes en cada carpeta
+    cantidad_train = len(dataset_estructura_yolo['train']['images'])
+    cantidad_test = len(dataset_estructura_yolo['test']['images'])
+    cantidad_valid = len(dataset_estructura_yolo['valid']['images'])
+
+    # Calcular la cantidad total de imágenes
+    cantidad_total = cantidad_train + cantidad_test + cantidad_valid
+
+    # Retornar los valores de las imágenes si es necesario junto con el estado de validación
+    return False, "", cantidad_total
+
+
+def validar_estructura_transformer(archivos, formato):
     # Diccionario para almacenar las rutas de archivos por carpetas para Transformer
     dataset_estructura_transformer = {
         "train": {"images": [], "json": False},
@@ -318,106 +408,95 @@ def validar_dataset():
         "valid": {"images": [], "json": False}
     }
 
+    error_formato = False
+    error_carpeta = False
+    formato_correcto = True
+
     # Procesar todos los archivos recibidos
     for archivo in archivos:
         # Obtener la ruta relativa del archivo dentro del directorio
         ruta_relativa = archivo.filename
+        # Validación para Transformer
+        if 'train/' in ruta_relativa:
+            if ruta_relativa.endswith(formato):
+                dataset_estructura_transformer['train']['images'].append(
+                    ruta_relativa)
+            elif ruta_relativa.endswith('.json'):
+                dataset_estructura_transformer['train']['json'] = True
+            else:
+                error_formato = True
+                formato_correcto = False
 
-        if tecnologia == "YOLO":
-            # Validación para YOLO
-            if 'train/' in ruta_relativa:
-                if '/labels/' in ruta_relativa and ruta_relativa.endswith('.txt'):
-                    dataset_estructura_yolo['train']['labels'].append(
-                        ruta_relativa)
-                elif '/images/' in ruta_relativa and (ruta_relativa.endswith('.jpg') or ruta_relativa.endswith('.png')):
-                    dataset_estructura_yolo['train']['images'].append(
-                        ruta_relativa)
-            elif 'test/' in ruta_relativa:
-                if '/labels/' in ruta_relativa and ruta_relativa.endswith('.txt'):
-                    dataset_estructura_yolo['test']['labels'].append(
-                        ruta_relativa)
-                elif '/images/' in ruta_relativa and (ruta_relativa.endswith('.jpg') or ruta_relativa.endswith('.png')):
-                    dataset_estructura_yolo['test']['images'].append(
-                        ruta_relativa)
-            elif 'valid/' in ruta_relativa:
-                if '/labels/' in ruta_relativa and ruta_relativa.endswith('.txt'):
-                    dataset_estructura_yolo['valid']['labels'].append(
-                        ruta_relativa)
-                elif '/images/' in ruta_relativa and (ruta_relativa.endswith('.jpg') or ruta_relativa.endswith('.png')):
-                    dataset_estructura_yolo['valid']['images'].append(
-                        ruta_relativa)
+        elif 'test/' in ruta_relativa:
+            if ruta_relativa.endswith(formato):
+                dataset_estructura_transformer['test']['images'].append(
+                    ruta_relativa)
+            elif ruta_relativa.endswith('.json'):
+                dataset_estructura_transformer['test']['json'] = True
+            else:
+                error_formato = True
+                formato_correcto = False
 
-        elif tecnologia == "Transformer":
-            # Validación para Transformer
-            if 'train/' in ruta_relativa:
-                if ruta_relativa.endswith('.jpg') or ruta_relativa.endswith('.png'):
-                    dataset_estructura_transformer['train']['images'].append(
-                        ruta_relativa)
-                elif ruta_relativa.endswith('.json'):
-                    dataset_estructura_transformer['train']['json'] = True
-            elif 'test/' in ruta_relativa:
-                if ruta_relativa.endswith('.jpg') or ruta_relativa.endswith('.png'):
-                    dataset_estructura_transformer['test']['images'].append(
-                        ruta_relativa)
-                elif ruta_relativa.endswith('.json'):
-                    dataset_estructura_transformer['test']['json'] = True
-            elif 'valid/' in ruta_relativa:
-                if ruta_relativa.endswith('.jpg') or ruta_relativa.endswith('.png'):
-                    dataset_estructura_transformer['valid']['images'].append(
-                        ruta_relativa)
-                elif ruta_relativa.endswith('.json'):
-                    dataset_estructura_transformer['valid']['json'] = True
+        elif 'valid/' in ruta_relativa:
+            if ruta_relativa.endswith(formato):
+                dataset_estructura_transformer['valid']['images'].append(
+                    ruta_relativa)
+            elif ruta_relativa.endswith('.json'):
+                dataset_estructura_transformer['valid']['json'] = True
+            else:
+                error_formato = True
+                formato_correcto = False
 
-    # Validación final para YOLO
-    if tecnologia == "YOLO":
-        for carpeta, contenido in dataset_estructura_yolo.items():
-            if not contenido['labels'] or not contenido['images']:
-                return f"Error: La carpeta {carpeta} no contiene los archivos necesarios para YOLO"
-        mensaje = f"Estructura correcta para el dataset: {nombre_dataset}, si vas a usar YOLO"
+    if error_formato:
+        return True, f"Error: No hay ninguna imagen con formato {formato}, Valida nuevamente tu dataset", ""
 
-        flash(mensaje)  # Envía el mensaje a través de flash
-        return redirect(url_for('CrudDatasetA'))
+    # Validar si las carpetas tienen la estructura necesaria
+    for carpeta, contenido in dataset_estructura_transformer.items():
+        if not contenido['images'] or not contenido['json']:
+            error_carpeta = True
 
-    # Validación final para Transformer
-    elif tecnologia == "Transformer":
-        for carpeta, contenido in dataset_estructura_transformer.items():
-            if not contenido['images'] or not contenido['json']:
-                return f"Error: La carpeta {carpeta} no contiene los archivos necesarios para Transformer"
-        mensaje = f"Estructura correcta para el dataset: {nombre_dataset}, si vas a usar Transformer"
-        flash(mensaje)  # Envía el mensaje a través de flash
-    return redirect(url_for('CrudDatasetA'))
+    # Si hay errores en las carpetas, regresamos el error correspondiente
+    if error_carpeta:
+        return True, f"Error: La carpeta {carpeta} no contiene los archivos necesarios para Transformer", ""
+
+    # Contar imágenes en cada carpeta
+    cantidad_train = len(dataset_estructura_transformer['train']['images'])
+    cantidad_test = len(dataset_estructura_transformer['test']['images'])
+    cantidad_valid = len(dataset_estructura_transformer['valid']['images'])
+
+    # Calcular la cantidad total de imágenes
+    cantidad_total = cantidad_train + cantidad_test + cantidad_valid
+
+    return False, "", cantidad_total
 
 
-def guardar_dataset():
-    nombre_dataset = request.form.get('nombreDataset')
-    formato = request.form['Formato']
-    tecnologia = request.form['Tecnologia']
-    tipo_basura = request.form['tipoBasura']
+def guardar_dataset(nombre, ruta, formato, tecnologia, tipo_basura, cantidad_total):
     usuario_id = current_user.id
-    archivos = request.files.getlist('Dataset')
-    imagenes = [
-        archivo for archivo in archivos if archivo.filename.lower().endswith('.jpg')]
-    cantidad_imagenes = len(imagenes)
-
-    # Verificar si los campos están vacíos
-    if not all([nombre_dataset, formato, tipo_basura, tecnologia]):
-        flash('Por favor, complete todos los campos')
-        return redirect(url_for('CrudDatasetA'))
-
     cursor = BaseDatos.connection.cursor()
 
     cursor.execute(
-        "SELECT idTiposBasura FROM tiposbasura WHERE TipoBasura = %s", (tipo_basura,))
+        "SELECT 1 FROM dataexperiment WHERE NombreDataExp = %s", (nombre,))
+    # Si ya esta registrado el correo se envia mensaje
+    if cursor.fetchone() is not None:
+        flash('Ya existe un dataset con ese nombre')
+        return redirect(url_for('CrudDatasetA'))
 
+    cursor = BaseDatos.connection.cursor()
+    cursor.execute(
+        "SELECT idTiposBasura FROM tiposbasura WHERE TipoBasura = %s", (tipo_basura,))
     id_tipo_basura = cursor.fetchone()[0]
 
-    cursor.execute("INSERT INTO dataexperiment (idUsuarios, idTiposBasura, NombreDataExp,FormatoExp,Imagenes,Tecnologia) VALUES (%s, %s, %s, %s, %s,%s)",
-                   (usuario_id, id_tipo_basura, nombre_dataset, formato, cantidad_imagenes, tecnologia))
-
+    print(usuario_id, id_tipo_basura, nombre, formato,
+          cantidad_total, tecnologia, ruta)
+    # Insertar los datos del dataset en la base de datos
+    cursor.execute(
+        "INSERT INTO dataexperiment (idUsuarios, idTiposBasura, NombreDataExp, FormatoExp, Imagenes, Tecnologia, Ruta) "
+        "VALUES (%s, %s, %s, %s, %s, %s, %s)",
+        (usuario_id, id_tipo_basura, nombre, formato,
+         cantidad_total, tecnologia, ruta)
+    )
     BaseDatos.connection.commit()
-
-    flash("El dataset {nombre_dataset} ha sido guardado en la base de datos.")
-    return redirect(url_for('experimentadorA'))
+    cursor.close()
 
 
 @ app.route('/eliminarDataset/<string:NombreDataExp>')
@@ -426,6 +505,7 @@ def eliminarDataset(NombreDataExp):
     cursor.execute(
         'DELETE FROM dataexperiment WHERE NombreDataExp = %s', (NombreDataExp,))
     BaseDatos.connection.commit()
+    cursor.close()
     flash('Dataset eliminado satisfactoriamente')
     return redirect(url_for('experimentadorA'))
 
@@ -433,28 +513,33 @@ def eliminarDataset(NombreDataExp):
 @ app.route('/editarDataset/<string:NombreDataExp>')
 def editarDataset(NombreDataExp):
     cursor = BaseDatos.connection.cursor()
-    sql = "SELECT NombreDataExp, FormatoExp, Tecnologia FROM dataexperiment WHERE NombreDataExp = %s"
+    sql = "SELECT NombreDataExp FROM dataexperiment WHERE NombreDataExp = %s"
     cursor.execute(sql, (NombreDataExp,))
     dataset = cursor.fetchone()
     Nombre = dataset[0]
-    Formato = dataset[1]
-    Tecnologia = dataset[2]
 
-    return render_template('admin/editarDatasetExpAd.html', nombreDataset=Nombre, Tecnologia=Tecnologia,
-                           Formato=Formato)
+    return render_template('admin/editarDatasetExpAd.html', nombreDataset=Nombre)
 
 
-@ app.route('/modificarDataset/<string:NombreDataExp>', methods=['POST'])
-def modificarDataset(NombreDataExp):
+@ app.route('/modificarDataset/<string:NombreDataset>', methods=['POST'])
+def modificarDataset(NombreDataset):
     if request.method == 'POST':
         Nombre = request.form['nombreDataset']
-        Tecnologia = request.form['Tecnologia']
-        Formato = request.form['Formato']
 
         cursor = BaseDatos.connection.cursor()
-        sql = """UPDATE dataexperiment SET NombreDataExp = %s,Tecnologia = %s, FormatoExp = %s WHERE NombreDataExp = %s"""
-        cursor.execute(sql, (Nombre, Tecnologia, Formato, Nombre))
+
+        sql = "SELECT * FROM dataexperiment WHERE NombreDataExp = %s"
+        cursor.execute(sql, (Nombre,))
+        existe = cursor.fetchone()
+
+        if existe:
+            flash('Error: Ya existe un dataset con el mismo nombre')
+            return redirect(url_for('experimentadorA'))
+
+        sql = """UPDATE dataexperiment SET NombreDataExp = %s WHERE NombreDataExp = %s"""
+        cursor.execute(sql, (Nombre, NombreDataset))
         BaseDatos.connection.commit()
+        cursor.close()
         flash('Dataset actualizado satisfactoriamente')
         return redirect(url_for('experimentadorA'))
 
@@ -502,6 +587,7 @@ def agregarNuevo():
         cursor.execute(sql)
         # Se realiza el envio de los datos.
         BaseDatos.connection.commit()
+        cursor.close()
         # Mensaje de guardado correcto
         flash('Nuevo usuario, guardado satisfactoriamente')
         # Al terminar el proceso se redirecciona a la ruta de "New"
@@ -540,6 +626,7 @@ def agregarNuevoA():
             nombre, apellido, correo, contra,  tipo, fechaRegistro, intereses, procedencia)
         cursor.execute(sql)
         BaseDatos.connection.commit()
+        cursor.close()
         flash('Nuevo usuario, guardado satisfactoriamente')
         return redirect(url_for('nuevoUsuarioA'))
 
@@ -571,6 +658,7 @@ def agregarBasura():
             tipo, descripcion, afectaciones, tiempo)
         cursor.execute(sql)
         BaseDatos.connection.commit()
+        cursor.close()
         flash('Nueva información, guardada satisfactoriamente')
         return redirect(url_for('crudBasuraA'))
 
@@ -591,6 +679,7 @@ def eliminarA(correo):
     cursor.execute(
         'DELETE FROM usuarios WHERE Correo = %s', (correo,))
     BaseDatos.connection.commit()
+    cursor.close()
     flash('Usuario eliminado satisfactoriamente')
     return redirect(url_for('crudUsuarioA'))
 
@@ -678,6 +767,7 @@ def editarUsuarioA(correo):
                                      intereses, procedencia, correo))
 
         BaseDatos.connection.commit()
+        cursor.close()
 
         modificaciones = []
         if usuario_antiguo[1] != nombre:
@@ -726,6 +816,7 @@ def eliminarBasuraA(tipoBasura):
     cursor.execute(
         'DELETE FROM tiposbasura WHERE tipoBasura = %s', (tipoBasura,))
     BaseDatos.connection.commit()
+    cursor.close()
     flash('Usuario eliminado satisfactoriamente')
     return redirect(url_for('crudBasuraA'))
 
@@ -757,6 +848,7 @@ def editarBasuraAdmin(tipoBasura):
         cursor.execute(sql, (tipoBasura, descripcion, afectaciones,
                        tiempoDegradacion, tipoBasura))
         BaseDatos.connection.commit()
+        cursor.close()
         flash('Contacto actualizado satisfactoriamente')
         return redirect(url_for('crudBasuraA'))
 
@@ -806,6 +898,7 @@ def editarUsuarioT(correo):
         cursor.execute(sql, (nombre, apellido, correo,
                        contra, fechaRegistro, intereses, procedencia, correo))
         BaseDatos.connection.commit()
+        cursor.close()
         flash('Contacto actualizado satisfactoriamente')
         return redirect(url_for('crudUsuarioT'))
 
@@ -862,6 +955,10 @@ def nuevaContra(Token_Contra):
             nueva_contra = request.form['nuevac']
             confirmar_contra = request.form['confirmar_nuevac']
 
+            if not nueva_contra or not confirmar_contra:
+                flash('Por favor, rellena todos los campos')
+                return redirect(url_for('nuevaContra', Token_Contra=Token_Contra))
+
             # Verifica si ambas contraseñas coinciden
             if nueva_contra == confirmar_contra:
                 # Genera el hash de la nueva contraseña
@@ -905,7 +1002,6 @@ def status_404(error):
 
 # Configuración y ejecución del sistema como el llamado al módulo "configuración"
 if __name__ == '__main__':
-    Token.init_app(app)
     app.register_error_handler(401, status_401)
     app.register_error_handler(404, status_404)
     app.run(debug=True)

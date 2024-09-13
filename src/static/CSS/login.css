@@ -234,9 +234,13 @@ body {
   src: url('/static/fonts/Montserrat-SemiBold.ttf');
 }
 /****************************************ESTILOS DE SECCIONES****************************************/
-b{
+b,p{
   font-family: TodoN;
   font-size: 20px;
+}
+.form-control, .form-floating label {
+  font-family: TodoN;
+  font-size: 16px; /* Tamaño de fuente */
 }
 a{
   z-index: 3;
@@ -362,7 +366,6 @@ a{
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 80%;
 }
 .contenedor-file {
   margin-bottom: 10px;
@@ -372,8 +375,9 @@ a{
   margin-bottom: 10px;
 }
 
-.contenedor-tecnologia-formato {
-  display: flex;
+.contenedor-tecnologia-formato-tipo {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
   justify-content: space-between;
   margin-bottom: 10px;
 }
@@ -388,26 +392,19 @@ a{
   flex-direction: column;
 }
 
-.parte-inferior {
+.tipo {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  width: 80%;
-  margin-top: 20px;
-}
-
-.contenedor-tipo-basura {
-  margin-bottom: 10px;
 }
 
 input::placeholder {
   font-family: TodoN;
   font-size: 15px;
-  color: #3f4554; /* Color del texto del placeholder */
+  color: #3f4554;
 }
 
 input[type="text"] {
-  font-size: 18px; /* Tamaño de letra en píxeles */
+  font-size: 18px;
 }
 
 /****************************************ESTILOS DE PAGINAS****************************************/
