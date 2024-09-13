@@ -1,0 +1,18 @@
+[33m62cb452[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Completo CRUD dataset experimentacion
+[33m88e68cf[m YOLO,DETR,Recuperacion - OK
+[33mf1552cc[m[33m ([m[1;31morigin/main[m[33m)[m Se termina satisfactoriamente YOLO y Transformers.
+[33m3f0739d[m Se completa el modelo Transformer al 100
+[33mfc5f876[m Actualización de .gitignore
+[33mb981146[m Se agrega el ignorar la carpeta de sistemas, ligthning y se mantiene toda la configuración de DETR
+[33mcdba111[m Se confirma que todo esta correcto, y se eliman los archivos de python version 3.12
+[33m3e1d287[m Se agrega despues de estar todo correcto, espero todo vaya bien
+[33mf412184[m Se crean todas alas vistas restantantes, todo funciona correctamente, solo falta Evaluación y Experimentación
+[33m283b1e0[m Todos los CRUDS funcionan correcto y se completa el usuario actual, solo queda pendiente la contraseña
+[33m77aa5ec[m Se logra hacer todos los Cruds del Administrador, TODO OK
+[33m7f22b46[m Se olvida JS, Se agregan las vistas, se resuelven problemas de bloques, y se completa la inserción correcta de los datos a la BD.
+[33m5f32deb[m Se hace correctamente la inserción de nuevos usuarios, se aseguran las rutas, y se configura el CSS con JS.
+[33m65b9f7e[m Se arregla y se decide que va a solicitar todos los atributos de la BD desde el inicio
+[33m7d7fb59[m Se queda en el error de que no encuentra el valor de "id" al momento de hacer la validacion de los datos
+[33mcdfd4bf[m Se arregla el inicio de sesión y se pone fondo de pantalla, ya todo listo
+[33m0759e6f[m Primer commit, prueba de inicio
+[33md95b575[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m Initial commit
