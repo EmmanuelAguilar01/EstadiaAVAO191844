@@ -289,7 +289,7 @@ a{
 
 #Tabla td {
   text-align: center;
-  white-space: normal;
+  white-space: nowrap;
 }
 
 #Tabla th {
@@ -303,7 +303,24 @@ a{
   width: 1px; /* Fuerza a la celda a ajustarse al contenido */
   white-space: nowrap; /* Evita que el texto se ajuste al ancho de la celda */
 }
-/* From Uiverse.io by coding-masala */ 
+/* Contenedor de flexbox para las acciones */
+.acciones {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 10px; /* Espacio entre los elementos */
+}
+
+/* Asegurar que los botones y radio tengan un tamaño adecuado */
+.acciones a, .acciones .radio-buttons {
+  display: inline-flex;
+  align-items: center;
+}
+
+.radio-buttons{
+  margin-top: 7%;
+}
+
 .radio-button input[type="radio"] {
   display: none;
 }
@@ -311,8 +328,8 @@ a{
 .radio-circle {
   width: 20px;
   height: 20px;
-  border-radius: 50%;
-  border: 2px solid #aaa;
+  border-radius: 100%;
+  border: 2px solid #e8eaed;
   position: relative;
   margin-right: 10px;
 }
@@ -336,23 +353,15 @@ a{
 }
 
 .radio-button:nth-of-type(1) input[type="radio"]:checked + .radio-circle::before {
-  background-color: #ff6600;
-}
-
-.radio-button:nth-of-type(2) input[type="radio"]:checked + .radio-circle::before {
-  background-color: #ffffff;
-}
-
-.radio-button:nth-of-type(3) input[type="radio"]:checked + .radio-circle::before {
-  background-color: #26be00;
+  background-color: #e8eaed;
 }
 
 .radio-button:hover .radio-circle {
-  border-color: #555;
+  border-color: #111521;
 }
 
 .radio-button:hover input[type="radio"]:checked + .radio-circle::before {
-  background-color: #555;
+  background-color: #111521;
 }
 
 /**************************************FORMULARIO DATASET*******************************************/
@@ -1021,7 +1030,7 @@ gap: 40px;
 .content {
   padding: 20px;
 }
-/****************************************ESTILOS DE BOTON TABLA EDITAR****************************************/
+/***********************************ESTILOS DE BOTON TABLA EDITAR****************************************/
 .BotonEditar{
   display: inline-flex;
   align-items: center;
@@ -1057,9 +1066,9 @@ gap: 40px;
   height: 25px;
 }
 .BotonEditar:hover{
-  background:rgb(108, 20, 224);
+  background:#111521;
 }
-/****************************************ESTILOS DE BOTON TABLA ELIMINAR****************************************/
+/********************************ESTILOS DE BOTON TABLA ELIMINAR****************************************/
 .BotonEliminar{
   display: inline-flex;
   align-items: center;
@@ -1094,7 +1103,7 @@ gap: 40px;
   height: 25px;
 }
 .BotonEliminar:hover{
-  background:rgb(108, 20, 224);
+  background:#111521;
 }
 #FINAL{
   margin-top: 50px;

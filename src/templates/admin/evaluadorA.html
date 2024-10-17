@@ -5,105 +5,105 @@
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 <form action="/agregarBasura" method="POST">
 <br>
-<div class="container">
-    <div class="row">
-      <div class="col-md-6">
-        <table id="Tabla">
-            <thead>
-                <tr>
-                    <td>Nombre</td>
-                    <td>Formato</td>
-                    <td># Imagenes</td>
-                    <td>Usuario</td>
-                    <td>Tipo Basura</td>
-                </tr>
-            </thead>
-            <tbody>
-                {% for basura in basuras %}
-                <tr>
-                    <td >{{ basura.1 }}</td>
-                    <td >{{ basura.2 }}</td>
-                    <td >{{ basura.3 }}</td>
-                    <td >{{ basura.4 }}</td>
-                    <td>{{ basura.5 }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>        
-      </div>
-      <div class="col-md-6">
-        <b>Tecnología a Utilizar:</b>
-        <br>
-        <input type="radio" id="YOLO" name="Tecnologia" value="YOLO">
-        <label for="opcion1">YOLO</label><br>
-      
-        <input type="radio" id="TRANS" name="Tecnologia" value="TRANS">
-        <label for="opcion2">Transformers</label><br>
-      </div>
-    </div>
-  </div>
-
+<div class="UnaTabla">
+    <table id="Tabla">
+        <thead>
+            <tr>
+                <td>Nombre</td>
+                <td>Formato</td>
+                <td># Imagenes</td>
+                <td>Usuario</td>
+                <td>Tipo Basura</td>
+                <td>Seleccionar</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for databasura in databasuras %}
+            <tr>
+                <td >{{ databasura.0 }}</td>
+                <td >{{ databasura.1 }}</td>
+                <td >{{ databasura.2 }}</td>
+                <td >{{ databasura.3 }}</td>
+                <td >{{ databasura.4 }}</td>
+                <td >                        
+                    <div class="radio-buttons">
+                        <label class="radio-button">
+                            <input type="radio" name="option" id="seleccion-{{ databasura.5 }}">
+                            <div class="radio-circle"></div>
+                        </label>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>        
 <br>
-<!--CONTENEDOR DE BOTONES-->
-<div class="Botones">
-    <button class="Botones" type="submit">
-        <div class="FlechaN">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2-square" viewBox="0 0 16 16">
-                <path d="M3 14.5A1.5 1.5 0 0 1 1.5 13V3A1.5 1.5 0 0 1 3 1.5h8a.5.5 0 0 1 0 1H3a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5h10a.5.5 0 0 0 .5-.5V8a.5.5 0 0 1 1 0v5a1.5 1.5 0 0 1-1.5 1.5z"/>
-                <path d="m8.354 10.354 7-7a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0"/>
-              </svg>
-        </div>
-        <span>Verificar</span>
-    </button>
+<div class="UnaTabla">
+    <table id="Tabla">
+        <thead>
+            <tr>
+                <td>Nombre</td>
+                <td>Arquitectura</td>
+                <td>% Error</td>
+                <td>% Precisión</td>
+                <td>Tiempo</td>
+                <td>Usuario</td>
+                <td>Seleccionar</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for peso in pesos %}
+            <tr>
+                <td >{{ peso.0 }}</td>
+                <td >{{ peso.1 }}</td>
+                <td >{{ peso.2 }}</td>
+                <td >{{ peso.3 }}</td>
+                <td >{{ peso.4 }}</td>
+                <td >{{ peso.6 }}</td>
+                <td >                        
+                    <div class="radio-buttons">
+                        <label class="radio-button">
+                            <input type="radio" name="option" id="seleccion-{{ peso.5 }}">
+                            <div class="radio-circle"></div>
+                        </label>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
-</form>
 <br>
-<form action="">
-<table id="Tabla">
-    <thead>
-        <tr>
-            <td>Nombre</td>
-            <td>Tiempo</td>
-            <td>% Error</td>
-            <td>% Precisión</td>
-            <td>Usuario</td>
-        </tr>
-    </thead>
-    <tbody>
-        {% for basura in basuras %}
-        <tr>
-            <td >{{ basura.1 }}</td>
-            <td >{{ basura.2 }}</td>
-            <td >{{ basura.3 }}</td>
-            <td >{{ basura.4 }}</td>
-            <td >{{ basura.5 }}</td>
-            <td ><input type="checkbox" name="" id=""></td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-<br>
+<div class="col-md-6">
+    <b>Tecnología a Utilizar:</b>
+    <br>
+    <input type="radio" id="YOLO" name="Tecnologia" value="YOLO">
+    <label for="opcion1">YOLO</label><br>
+  
+    <input type="radio" id="TRANS" name="Tecnologia" value="TRANS">
+    <label for="opcion2">Transformers</label><br>
+  </div>
+  <br>
 <div class="contenedor-botones2">
     <button class="BotonAceptar" type="submit">
         <div class="IAceptar">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-floppy" viewBox="0 0 16 16">
-                <path d="M11 2H9v3h2z"/>
-                <path d="M1.5 0h11.586a1.5 1.5 0 0 1 1.06.44l1.415 1.414A1.5 1.5 0 0 1 16 2.914V14.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 14.5v-13A1.5 1.5 0 0 1 1.5 0M1 1.5v13a.5.5 0 0 0 .5.5H2v-4.5A1.5 1.5 0 0 1 3.5 9h9a1.5 1.5 0 0 1 1.5 1.5V15h.5a.5.5 0 0 0 .5-.5V2.914a.5.5 0 0 0-.146-.353l-1.415-1.415A.5.5 0 0 0 13.086 1H13v4.5A1.5 1.5 0 0 1 11.5 7h-7A1.5 1.5 0 0 1 3 5.5V1H1.5a.5.5 0 0 0-.5.5m3 4a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5V1H4zM3 15h10v-4.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5z"/>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sliders" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1z"/>
               </svg>
         </div>
-        <span>Guardar</span>
+        <span>Evaluar</span>
     </button>
-    <button class="BotonCancelar" type="button" onclick="location.href='{{ url_for('admin') }}'">
+    <button class="BotonCancelar" type="button" onclick="location.href='{{ url_for('CrudDatasetEval') }}'">
         <div class="ICancelar">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                 <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
             </svg>
         </div>
-        <span>Cancelar</span>
+        <span>Agregar</span>
     </button>
 </div>
-
 </form>
 <footer id="Pie">
 Estadia - Aguilar Vargas Antonio Emmanuel - AVAO191844
