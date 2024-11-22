@@ -1,4 +1,7 @@
 import os
+import json
+import time
+from datetime import timedelta
 import warnings
 import random
 import supervision
@@ -33,15 +36,6 @@ model.to(DEVICE)
 class Dataset:
     def __init__(self, location):
         self.location = location
-
-
-dataset = Dataset(
-    r"C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Datasets\hackathone.v2i.coco")
-
-ANNOTATION_FILE_NAME = "_annotations.coco.json"
-TRAIN_DIRECTORY = os.path.join(dataset.location, "train")
-VAL_DIRECTORY = os.path.join(dataset.location, "valid")
-TEST_DIRECTORY = os.path.join(dataset.location, "test")
 
 
 class CocoDetection(torchvision.datasets.CocoDetection):
@@ -145,15 +139,57 @@ def collate_fn(batch):
         'labels': labels
     }
 
+def convert_to_xywh(boxes):
+        xmin, ymin, xmax, ymax = boxes.unbind(1)
+        return torch.stack((xmin, ymin, xmax - xmin, ymax - ymin), dim=1)
+
+def prepare_for_coco_detection(predictions):
+    coco_results = []
+    for original_id, prediction in predictions.items():
+        if len(prediction) == 0:
+            continue
+
+        boxes = prediction["boxes"]
+        boxes = convert_to_xywh(boxes).tolist()
+        scores = prediction["scores"].tolist()
+        labels = prediction["labels"].tolist()
+
+        coco_results.extend(
+            [
+                {
+                    "image_id": original_id,
+                    "category_id": labels[k],
+                    "bbox": box,
+                    "score": scores[k],
+                }
+                for k, box in enumerate(boxes)
+            ]
+        )
+    return coco_results
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--epocas", type=int)
-    parser.add_argument("--batch_size", type=int)
-    parser.add_argument("--threshold", type=float)
-    parser.add_argument("--iou_threshold", type=float)
+    parser.add_argument("--epocas", type=int, required=True)
+    parser.add_argument("--batch_size", type=int, required=True)
+    parser.add_argument("--threshold", type=float, required=True)
+    parser.add_argument("--iou_threshold", type=float, required=True)
+    parser.add_argument("--ruta", type=str, required=True)
+    parser.add_argument("--name", type=str, required=True)
     args = parser.parse_args()
-    
+
+    dataset = Dataset(args.ruta)
+
+    # Define tu ruta personalizada para guardar los logs
+    directorioBase = "C:\\Users\\nayel\\Desktop\\Estadia - AVAO191844\\Sistema\\src\\Pesos\\Transformers"
+
+    directorioPersonalizado = os.path.join(directorioBase, args.name)
+    os.makedirs(directorioPersonalizado, exist_ok=True)
+
+    ANNOTATION_FILE_NAME = "_annotations.coco.json"
+    TRAIN_DIRECTORY = os.path.join(dataset.location, "train")
+    VAL_DIRECTORY = os.path.join(dataset.location, "valid")
+    TEST_DIRECTORY = os.path.join(dataset.location, "test")
+
     CONFIDENCE_TRESHOLD = args.threshold
     IOU_TRESHOLD = args.iou_threshold
 
@@ -221,13 +257,22 @@ if __name__ == "__main__":
     # settings
     MAX_EPOCHS = args.epocas
 
+    iniciar_tiempo = time.time()
+
     trainer = Trainer(devices=1, accelerator="cpu", max_epochs=MAX_EPOCHS,
-                      gradient_clip_val=0.1, accumulate_grad_batches=8, log_every_n_steps=5)
+                      gradient_clip_val=0.1, accumulate_grad_batches=8, log_every_n_steps=5, default_root_dir=directorioPersonalizado)
 
     trainer.fit(model)
 
+    terminar_tiempo = time.time()
+
+    tiempo_total = terminar_tiempo - iniciar_tiempo
+
+    tiempo_formateado = str(timedelta(seconds=tiempo_total))
+
     CHECKP_DIR = "C:\\Users\\nayel\\Desktop\\Estadia - AVAO191844\\Sistema\\src\\Checkpoints"
-    CHECKPOINT_PATH = os.path.join(CHECKP_DIR, "PuntoGuardadoTrans.ckpt")
+    CHECKPOINT_PATH = os.path.join(CHECKP_DIR, args.name)
+    os.makedirs(CHECKPOINT_PATH, exist_ok=True)
 
     trainer.save_checkpoint(CHECKPOINT_PATH)
 
@@ -275,41 +320,13 @@ if __name__ == "__main__":
 
     # annotate
     detections = supervision.Detections.from_transformers(
-        transformers_results=results).with_nms(threshold=IOU_TRESHOLD)
+        transformers_results=results).with_nms(threshold=args.iou_threshold)
     labels = [f"{id2label[class_id]} {confidence:.2f}" for _,
               confidence, class_id, _ in detections]
     frame = box_annotator.annotate(
         scene=image.copy(), detections=detections, labels=labels)
 
     print('detections')
-
-    def convert_to_xywh(boxes):
-        xmin, ymin, xmax, ymax = boxes.unbind(1)
-        return torch.stack((xmin, ymin, xmax - xmin, ymax - ymin), dim=1)
-
-    def prepare_for_coco_detection(predictions):
-        coco_results = []
-        for original_id, prediction in predictions.items():
-            if len(prediction) == 0:
-                continue
-
-            boxes = prediction["boxes"]
-            boxes = convert_to_xywh(boxes).tolist()
-            scores = prediction["scores"].tolist()
-            labels = prediction["labels"].tolist()
-
-            coco_results.extend(
-                [
-                    {
-                        "image_id": original_id,
-                        "category_id": labels[k],
-                        "bbox": box,
-                        "score": scores[k],
-                    }
-                    for k, box in enumerate(boxes)
-                ]
-            )
-        return coco_results
 
     evaluator = CocoEvaluator(coco_gt=TEST_DATASET.coco, iou_types=["bbox"])
 
@@ -338,9 +355,29 @@ if __name__ == "__main__":
     evaluator.accumulate()
     evaluator.summarize()
 
-    MODEL_PATH = (
-        r"C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Pesos\Transformers")
-    model.model.save_pretrained(MODEL_PATH)
+    # Extraer métricas de AP y calcular el error
+    ap_50 = evaluator.coco_eval['bbox'].stats[1]  # AP @ IoU=0.50
 
-    model = DetrForObjectDetection.from_pretrained(MODEL_PATH)
+    # Error como complemento del AP
+    error_50 = 1 - ap_50
+
+    porcentaje_ap = ap_50 * 100
+    porcentaje_error = error_50 * 100
+
+    ruta_completa = os.path.join(directorioPersonalizado, "custom-model")
+
+    # Guardar métricas en un archivo JSON
+    metricas = {
+        "tiempo_formateado": tiempo_formateado,
+        "ap_50": porcentaje_ap,
+        "error_50": porcentaje_error,
+        "direccion": ruta_completa
+    }
+    direccionJson = os.path.join(directorioPersonalizado, "metricas.json")
+    with open(direccionJson, 'w') as json_file:
+        json.dump(metricas, json_file, indent=4)
+
+    model.model.save_pretrained(directorioPersonalizado)
+
+    model = DetrForObjectDetection.from_pretrained(directorioPersonalizado)
     model.to(DEVICE)

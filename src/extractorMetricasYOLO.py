@@ -1,5 +1,6 @@
 import csv
 
+
 def procesar_metricas(archivo_csv, archivo_salida):
     mejor_map = -1  # Para encontrar el mejor mAP
     mejor_precision = -1
@@ -39,14 +40,35 @@ def procesar_metricas(archivo_csv, archivo_salida):
 
     # Escribir las métricas en un archivo de texto
     with open(archivo_salida, mode='w') as archivo_salida_txt:
-        archivo_salida_txt.write(f"Mejor Precisión: {mejor_precision_porcentaje:.2f}%\n")
-        archivo_salida_txt.write(f"Porcentaje de error (basado en mAP): {porcentaje_error:.2f}%\n")
+        archivo_salida_txt.write(
+            f"Mejor Precisión: {mejor_precision_porcentaje:.2f}%\n")
+        archivo_salida_txt.write(
+            f"Porcentaje de error (basado en mAP): {porcentaje_error:.2f}%\n")
         archivo_salida_txt.write(f"Tiempo final de ejecución: {tiempo}\n")
 
     print(f"Métricas guardadas en {archivo_salida}")
+
 
 # Uso del código
 archivo_csv = 'C:\\Users\\nayel\\Desktop\\Estadia - AVAO191844\\Sistema\\src\\Pesos\\YOLO\\30\\train\\yolov5s_results\\results.csv'
 archivo_salida = 'C:\\Users\\nayel\\Desktop\\Estadia - AVAO191844\\Sistema\\src\\Pesos\\YOLO\\30\\train\\yolov5s_results\\Metricas.txt'
 
 procesar_metricas(archivo_csv, archivo_salida)
+
+########################################## DETECTOR YOLO####################################################
+"""    opt_detect = parse_opt_detect()
+
+    opt_detect.weights = r"C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Pesos\YOLO\yolov5s_results\weights\best.pt"
+    opt_detect.imgsz = (args.imgsz, args.imgsz)
+    opt_detect.conf_thres = conf_thres
+    opt_detect.iou_thres = iou_thres
+    opt_detect.source = f"{dataset.location}/test/images"
+    opt_detect.name = r"C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Pesos\YOLO\yolov5s_results\test"
+
+    detect.main(opt_detect)
+
+    for imageName in glob.glob(r"C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Pesos\YOLO\yolov5s_results\test\*.jpg"):
+        img = mpimg.imread(imageName)  # Lee la imagen con matplotlib
+        plt.imshow(img)  # Muestra la imagen
+        plt.show()  # Muestra la imagen en una ventana
+"""

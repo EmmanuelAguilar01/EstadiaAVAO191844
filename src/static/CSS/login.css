@@ -161,69 +161,137 @@ body {
 .bd-mode-toggle .dropdown-menu .active .bi {
   display: block !important;
 }
-/*CONFIGURACION RADIO TECNOLOGIA*/
-.tabs {
-  display: inline-flex;
-  position: relative;
+/************************************CONFIGURACION RADIO TECNOLOGIA****************************************/
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #111521;
+}
+
+.custom-radio {
+  display: flex;
+  flex-direction: column;
   background-color: #fff;
-  box-shadow: 0 0 1px 0 rgba(24, 94, 224, 0.15), 0 6px 12px 0 rgba(24, 94, 224, 0.15);
-  padding: 10px;
-  border-radius: 99px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
-.tabs * {
-  z-index: 2;
-}
-
-.container input[type="radio"] {
+.custom-radio input[type="radio"] {
   display: none;
 }
 
-.tab {
+.radio-label {
+  font-family: TODOC;
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.radio-circle {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #6a7182;
+  border-radius: 50%;
+  margin-right: 10px;
+  transition: border-color 0.3s ease-in-out, background-color 0.3s ease-in-out;
+}
+
+.radio-text {
+  font-size: 1rem;
+  color: #bbbbbc;
+  transition: color 0.3s ease-in-out;
+}
+
+.custom-radio input[type="radio"]:checked + .radio-label {
+  background-color: #6a7182;
+}
+
+.custom-radio input[type="radio"]:checked + .radio-label .radio-circle {
+  border-color: #bbbbbc;
+  background-color: #6a7182;
+}
+
+.custom-radio input[type="radio"]:checked + .radio-label .radio-text {
+  color: #bbbbbc;
+}
+label{
+  margin-bottom: 0rem;
+}
+
+/*****************************CONFIGURACIÓN DE BOTON AGREGAR DATASET***************************************/
+.boton-agregar{
+  position: absolute;
+  right: 12%;
+  bottom: -50px;
+}
+.button {
+  --main-focus: #2d8cf0;
+  --font-color: #bbbbbc;
+  --bg-color-sub: #222;
+  --bg-color: #323232;
+  --main-color: #6a7182;
+  position: relative;
+  width: 200px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  border: 2px solid var(--main-color);
+  box-shadow: 4px 4px var(--main-color);
+  background-color: var(--bg-color);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.button, .button__icon, .button__text {
+  transition: all 0.3s;
+}
+
+.button .button__text {
+  transform: translateX(10px);
+  color: var(--font-color);
+  font-weight: 600;
+  font-family: TodoN;
+}
+
+.button .button__icon {
+  position: absolute;
+  transform: translateX(150px);
+  height: 100%;
+  width: 39px;
+  background-color: var(--bg-color-sub);
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 20px;
-  width: 85px;
-  font-family: TodoC;
-  font-size: 18px;
-  color: black;
-  font-weight: 500;
-  border-radius: 99px;
-  cursor: pointer;
-  transition: color 0.15s ease-in;
 }
 
-.container input[type="radio"]:checked + label {
-  color: #185ee0;
+.button .svg {
+  width: 100px;
+  stroke: var(--main-color);
 }
 
-.container input[id="YOLO"]:checked ~ .glider {
+.button:hover {
+  background: var(--bg-color);
+}
+
+.button:hover .button__text {
+  color: transparent;
+}
+
+.button:hover .button__icon {
+  width: 190px;
   transform: translateX(0);
 }
 
-.container input[id="TRANS"]:checked ~ .glider {
-  transform: translateX(132%);
+.button:active {
+  transform: translate(3px, 3px);
+  box-shadow: 0px 0px var(--main-color);
 }
-
-.glider {
-  position: absolute;
-  display: flex;
-  height: 35px;
-  width: 70px;
-  background-color: #e6eef9;
-  z-index: 1;
-  border-radius: 99px;
-  transition: 0.25s ease-out;
-}
-
-@media (max-width: 700px) {
- 
-  .tabs {
-    transform: scale(0.6);
-  }
-}
-
 /****************************************FUENTES****************************************/
 @font-face {
   font-family: TodoN;
@@ -237,6 +305,7 @@ body {
 b,p{
   font-family: TodoN;
   font-size: 20px;
+  margin-bottom: 5px;
 }
 .form-control, .form-floating label {
   font-family: TodoN;
@@ -249,7 +318,7 @@ a{
   font-family: TodoN;
   font-size: 20px;
   color: rgb(255, 255, 255);
-  margin-top: 15%;
+  margin-top: 50px;
   align-items: center;
   height: 21px;
 }
@@ -297,21 +366,20 @@ a{
   white-space: normal;
 }
 #Tabla td, #Tabla th {
-  border: 1px solid #e8eaed; /* Color de las líneas de división */
-  padding: 5px; /* Espacio entre el texto y la línea de división */
-  vertical-align: top; /* Alinea el texto al inicio de la celda */
-  width: 1px; /* Fuerza a la celda a ajustarse al contenido */
-  white-space: nowrap; /* Evita que el texto se ajuste al ancho de la celda */
+  border: 1px solid #e8eaed; 
+  padding: 5px; 
+  vertical-align: top; 
+  width: 1px; 
+  white-space: nowrap;
 }
-/* Contenedor de flexbox para las acciones */
+
 .acciones {
   display: flex;
   align-items: center;
   justify-content: space-around;
-  gap: 10px; /* Espacio entre los elementos */
+  gap: 10px; 
 }
 
-/* Asegurar que los botones y radio tengan un tamaño adecuado */
 .acciones a, .acciones .radio-buttons {
   display: inline-flex;
   align-items: center;
@@ -416,6 +484,71 @@ input[type="text"] {
   font-size: 18px;
 }
 
+/****************************************CONFIGURACIÓN CHECKBOX***************************************/
+
+.container-chbx input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: fit-content;
+  border-radius: 5px;
+ }
+ 
+ .container-chbx {
+  width: fit-content;
+  display: block;
+  position: center;
+  cursor: pointer;
+  font-size: 20px;
+ }
+ 
+
+ .checkmark {
+  position: relative;
+  top: 0;
+  left: 0;
+  height: 1.3em;
+  width: 1.3em;
+  background-color: #bbbbbc;
+  border-radius: 5px;
+ }
+ 
+ .container-chbx input:checked ~ .checkmark {
+  box-shadow: 3px 3px 0px rgb(183, 183, 183);
+  transition: all 0.2s;
+  opacity: 1;
+  background-image: linear-gradient(45deg, #111521 0%, #111521 100%);
+ }
+ 
+ .container-chbx input ~ .checkmark {
+  transition: all 0.2s;
+  opacity: 1;
+  box-shadow: 1px 1px 0px rgb(183, 183, 183);
+ }
+ 
+ .checkmark:after {
+  content: "";
+  position: absolute;
+  opacity: 0;
+  transition: all 0.2s;
+ }
+ 
+ .container-chbx input:checked ~ .checkmark:after {
+  opacity: 1;
+  transition: all 0.2s;
+ }
+ 
+ /* Style the checkmark/indicator */
+ .container-chbx .checkmark:after {
+  left: 0.4em;
+  top: 0.14em;
+  width: 0.5em;
+  height: 0.8em;
+  border: solid white;
+  border-width: 0 0.15em 0.15em 0;
+  transform: rotate(45deg);
+ }
 /****************************************ESTILOS DE PAGINAS****************************************/
 #PEPE{
   background:black
@@ -464,8 +597,11 @@ input[type="text"] {
   background-size: cover;
 
 }
-.Form{
-  border: none;
+.nombreIn{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 .Imagen{
   align-items: center;
@@ -514,19 +650,24 @@ gap: 40px;
 .dos-Columnas{
   display: grid;
   grid-template-columns: 1fr 1fr;
+  margin-top: 3.5%;
 }
 .Tres-Columnas {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
+  margin-top: 1%;
 }
-.cuatro-Columnas {
+.hiperparametros {
   display: grid;
-  grid-template-columns:  1fr 1fr 1fr 1fr;
+  grid-template-rows: repeat(4, 1fr);
+  gap: 10px;
 }
 .UnaTabla {
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
+  margin-bottom: 50px;
 }
 .Contenedor-4 {
   display: grid;

@@ -2,9 +2,9 @@
 {% block Titulo %}Entrenamiento{% endblock %}
 {% block Cuerpo %}
 <h1 id="Cab">Evaluador Administrador</h1>
+<form action="/evaluarA" method="POST">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-<form action="/agregarBasura" method="POST">
-<br>
+    <br>
 <div class="UnaTabla">
     <table id="Tabla">
         <thead>
@@ -28,7 +28,7 @@
                 <td >                        
                     <div class="radio-buttons">
                         <label class="radio-button">
-                            <input type="radio" name="option" id="seleccion-{{ databasura.5 }}">
+                            <input type="radio" name="dataset" value="{{ databasura.5 }}">
                             <div class="radio-circle"></div>
                         </label>
                     </div>
@@ -37,8 +37,8 @@
             {% endfor %}
         </tbody>
     </table>
-</div>        
-<br>
+</div>
+<br><br>
 <div class="UnaTabla">
     <table id="Tabla">
         <thead>
@@ -62,12 +62,10 @@
                 <td >{{ peso.4 }}</td>
                 <td >{{ peso.6 }}</td>
                 <td >                        
-                    <div class="radio-buttons">
-                        <label class="radio-button">
-                            <input type="radio" name="option" id="seleccion-{{ peso.5 }}">
-                            <div class="radio-circle"></div>
-                        </label>
-                    </div>
+                    <label class="container-chbx">
+                        <input type="checkbox" name="Peso" value="{{ peso.5 }}">
+                        <div class="checkmark"></div>
+                    </label>
                 </td>
             </tr>
             {% endfor %}
@@ -75,33 +73,14 @@
     </table>
 </div>
 <br>
-<div class="col-md-6">
-    <b>Tecnología a Utilizar:</b>
-    <br>
-    <input type="radio" id="YOLO" name="Tecnologia" value="YOLO">
-    <label for="opcion1">YOLO</label><br>
-  
-    <input type="radio" id="TRANS" name="Tecnologia" value="TRANS">
-    <label for="opcion2">Transformers</label><br>
-  </div>
-  <br>
 <div class="contenedor-botones2">
     <button class="BotonAceptar" type="submit">
         <div class="IAceptar">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sliders" viewBox="0 0 16 16">
                 <path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1z"/>
-              </svg>
-        </div>
-        <span>Evaluar</span>
-    </button>
-    <button class="BotonCancelar" type="button" onclick="location.href='{{ url_for('CrudDatasetEval') }}'">
-        <div class="ICancelar">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
-                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
             </svg>
         </div>
-        <span>Agregar</span>
+        <span>Evaluar</span>
     </button>
 </div>
 </form>

@@ -1,0 +1,56 @@
+{% extends 'baseAdmin.html' %}
+
+{% block Titulo %}Resultados de Evaluación{% endblock %}
+
+{% block Cuerpo %}
+<h1 id="Cab">Resultados de Evaluación</h1>
+
+<div class="UnaTabla">
+    <table id="Tabla">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Imagen</th>
+                <th>Resultados YOLO</th>
+                <th>Resultados DETR</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for resultado in resultados %}
+            <tr>
+                <td>{{ loop.index }}</td> <!-- Usamos loop.index para obtener el índice -->
+                <td>
+                    <img src="{{ url_for('static', filename='uploads/' + resultado[0]) }}" alt="Imagen" style="width: 150px; height: auto;">
+                </td>
+                <td>
+                    {% if resultado[1] %}
+                        <ul>
+                            {% for prediccion in resultado[1] %}
+                                <li>Clase: {{ prediccion['class'] }}, Confianza: {{ prediccion['confidence'] | round(2) }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No se detectaron objetos</p>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if resultado[2] %}
+                        <ul>
+                            {% for i in range(resultado[2]['logits']|length) %}
+                                <li>Clase: {{ resultado[2]['logits'][i][0] }}, Caja: {{ resultado[2]['boxes'][i] }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No se detectaron objetos</p>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<footer id="Pie">
+    Estadia - Aguilar Vargas Antonio Emmanuel - AVAO191844
+</footer>
+{% endblock %}

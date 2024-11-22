@@ -1,11 +1,16 @@
 # Importación de librerias para el proyecto
 from datetime import datetime, date, timedelta
 import os
+import json
 import subprocess
 import threading
+import pymysql
+import torch
+import cv2
+from pathlib import Path
 from flask_mail import Mail, Message
 from flask_mysqldb import MySQL, MySQLdb
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_wtf.csrf import CSRFProtect
 from flask_jwt_extended import create_access_token, JWTManager, decode_token
@@ -13,6 +18,7 @@ from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 from werkzeug.security import generate_password_hash
 from config import configuracion
 from Models.ModeloUsuario import ModeloUsuario
+from Evaluador import cargar_modelo_yolo, cargar_modelo_detr, evaluar_detr, evaluar_yolo, obtener_imagenes
 
 # Inicialización de la Aplicación
 app = Flask(__name__)
@@ -47,9 +53,9 @@ app_inicio_sesion = LoginManager(app)
 @app_inicio_sesion.user_loader
 def load_user(id):
     return ModeloUsuario.get_by_id(BaseDatos, id)
-##############################################################################################################################################
-####################################################### CONFIGURACIÓN UNIVERSAL ##############################################################
-##############################################################################################################################################
+############################################################################################################
+######################################### CONFIGURACIÓN UNIVERSAL ##########################################
+############################################################################################################
 
 # Ubicación del renderizado de la plantilla con su ruta
 
@@ -173,6 +179,17 @@ def agregarNuevo():
         return redirect(url_for('new'))
 
 
+def get_db_connection():
+    return pymysql.connect(
+        host='localhost',
+        user='root',
+        password='',
+        database='detector',
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor
+    )
+
+
 @app.route('/EjecExperimentador', methods=['POST'])
 def EjecExperimentador():
     tecnologia = request.form.get('Tecnologia')
@@ -180,79 +197,130 @@ def EjecExperimentador():
     batch_size = request.form.get('batch_size')
     threshold = request.form.get('threshold')
     iou_threshold = request.form.get('iou_threshold')
+    dataExperimentador = request.form.get('ruta')
+    valorTech = request.form.get('valorTech')
+    idDataset = request.form.get('idDataset')
+    name = request.form.get('name')
+    Usuario = current_user.id
+    ruta = str(Path(dataExperimentador))
 
-    print(f"Tecnología: {tecnologia}, Épocas: {epocas}, Batch size: {batch_size}, Threshold: {threshold}, IOU threshold: {iou_threshold}")
+    print(f"Tecnología: {tecnologia}, Épocas: {epocas}, Batch size: {batch_size}, Threshold: {threshold}, IOU threshold: {iou_threshold},Ruta: {ruta}, data5: {valorTech}, Nombre: {name},ID dataset:{idDataset},idUsuario: {Usuario}")
 
-    if not all([tecnologia, epocas, batch_size, threshold, iou_threshold]):
+    if not all([tecnologia, epocas, batch_size, threshold, iou_threshold, ruta, name, Usuario]):
         return jsonify({'error': 'Faltan valores requeridos'}), 400
 
-    if tecnologia == "YOLO":
+    if tecnologia == "YOLO" and valorTech == "YOLO":
         imgsz = request.form.get('imgsz')
-        data = request.files.get('data')
-        cfg = request.files.get('cfg')
-        name = request.form.get('name')
 
-        print(f"imgsz: {imgsz}, data: {data}, cfg: {cfg}, name: {name}")
-
-        if not all([imgsz, data, cfg, name]):
+        if not all([imgsz]):
             flash('Faltan valores requeridos para YOLO')
             return redirect(url_for('experimentadorA'))
 
-        data_filename = os.path.join(
-            app.config['UPLOAD_FOLDER'], data.filename)
-        cfg_filename = os.path.join(app.config['UPLOAD_FOLDER'], cfg.filename)
-
-        data.save(data_filename)
-        cfg.save(cfg_filename)
-
         # Inicia el hilo para entrenar YOLO
         thread = threading.Thread(target=YOLO, args=(
-            epocas, batch_size, threshold, iou_threshold, imgsz, data_filename, cfg_filename, name))
+            epocas, batch_size, threshold, iou_threshold, imgsz, ruta, name, idDataset, Usuario))
         mensaje = "Entrenando YoloV5"
 
-    elif tecnologia == "TRANS":
+    elif tecnologia == "TRANS" and valorTech == "Transformer":
         # Inicia el hilo para entrenar TRANSFORMER
         thread = threading.Thread(target=Transformers, args=(
-            epocas, batch_size, threshold, iou_threshold))
+            epocas, batch_size, threshold, iou_threshold, ruta, name, idDataset, Usuario))
         mensaje = "Entrenando Transformer"
+
+    else:
+        flash('La tecnología seleccionada no coincide con la tecnología del dataset.')
+        return redirect(url_for('experimentadorA'))
 
     # Inicia el hilo de entrenamiento y envía la respuesta
     thread.start()
     return jsonify({'mensaje': mensaje})
 
 
-def YOLO(epocas, batch_size, threshold, iou_threshold, imgsz, data, cfg, name):
+def YOLO(epocas, batch_size, threshold, iou_threshold, imgsz, ruta, name, idDataset, Usuario):
     env = os.environ.copy()
     env['CONF_THRES'] = str(threshold)
     env['IOU_THRES'] = str(iou_threshold)
+    env['RUTA'] = ruta
+    arquitecturaModelo = "YOLOV5"
 
     print(
-        f"Iniciando YOLO con los siguientes parámetros: {epocas}, {batch_size}, {imgsz}, {data}, {cfg}, {name}")
+        f"Iniciando YOLO con los siguientes parámetros: Epocas:{epocas}, BS:{batch_size}, IMG:{imgsz}, RutaDataset:{ruta}, Nombre:{name},ID_Usuario:{Usuario},IDDAtaset:{idDataset},Confianza:{threshold},Interseccón:{iou_threshold},Arquitectura:{arquitecturaModelo}")
 
     subprocess.run([r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\Sistema\Scripts\python.exe',
                     r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Models\YoloV5\YOLOV5.py',
-                    '--epochs', epocas, '--batch-size', batch_size, '--imgsz', imgsz, '--data', data,
-                    '--cfg', cfg, '--name', name], shell=True, check=True)
+                    '--epochs', str(epocas),
+                    '--batch-size', str(batch_size),
+                    '--imgsz', str(imgsz),
+                    '--name', name],
+                   shell=True, check=True, env=env)
 
-    # Cuando termine, redirigir con el mensaje
-    flash('Entrenamiento de YOLO finalizado')
+    ruta_json = os.path.join(
+        "C:\\Users\\nayel\\Desktop\\Estadia - AVAO191844\\Sistema\\src\\Pesos\\YOLO", name, "metricas.json")
+
+    if os.path.exists(ruta_json):
+        with open(ruta_json, 'r') as archivo_resultados:
+            resultados = json.load(archivo_resultados)
+
+        tiempoEjecutado = resultados.get("tiempo_formateado")
+        precisionExperimento = resultados.get("ap_50")
+        errorExperimento = resultados.get("error_50")
+        direccionCompleta = resultados.get("direccion")
+
+        db_connection = get_db_connection()
+        try:
+            with db_connection.cursor() as cursor:
+                cursor.execute("""
+                INSERT INTO experimentador (idUsuarios, idDataSetExp, NombreModelo, Arquitectura, PorcentajeErr, `Precision`, TiempoHoras, Pesos)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """, (Usuario, idDataset, name, arquitecturaModelo, errorExperimento, precisionExperimento, tiempoEjecutado, direccionCompleta))
+                db_connection.commit()
+        finally:
+            db_connection.close()
+    else:
+        print("El archivo metricas.json no existe.")
+
+    flash('Entrenamiento de YOLO ha finalizado y resultados guardados.')
     return redirect(url_for('experimentadorA'))
 
 
-def Transformers(epocas, batch_size, threshold, iou_threshold):
+def Transformers(epocas, batch_size, threshold, iou_threshold, ruta, name, idDataset, Usuario):
+    arquitecturaModelo = "Transformer"
+
+    print(
+        f"Iniciando DETR con los siguientes parámetros: Epocas:{epocas}, BS:{batch_size}, RutaDataset:{ruta}, Nombre:{name},ID_Usuario:{Usuario},IDDAtaset:{idDataset},Confianza:{threshold},Interseccón:{iou_threshold},Arquitectura:{arquitecturaModelo}")
+
     subprocess.run([r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\Sistema\Scripts\python.exe',
                     r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Models\Transformers\Transformer.py',
                     '--epocas', epocas, '--batch_size', batch_size, '--threshold', threshold,
-                    '--iou_threshold', iou_threshold], shell=True, check=True)
+                    '--iou_threshold', iou_threshold, '--ruta', ruta, '--name', name], shell=True, check=True)
 
-    flash('Entrenamiento de Transformers finalizado')
+    ruta_json = os.path.join(
+        "C:\\Users\\nayel\\Desktop\\Estadia - AVAO191844\\Sistema\\src\\Pesos\\Transformers", name, "metricas.json")
+
+    if os.path.exists(ruta_json):
+        with open(ruta_json, 'r') as archivo_resultados:
+            resultados = json.load(archivo_resultados)
+
+        tiempoEjecutado = resultados.get("tiempo_formateado")
+        precisionExperimento = resultados.get("ap_50")
+        errorExperimento = resultados.get("error_50")
+        direccionCompleta = resultados.get("direccion")
+
+        db_connection = get_db_connection()
+        try:
+            with db_connection.cursor() as cursor:
+                cursor.execute("""
+                INSERT INTO experimentador (idUsuarios, idDataSetExp, NombreModelo, Arquitectura, PorcentajeErr, `Precision`, TiempoHoras, Pesos)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """, (Usuario, idDataset, name, arquitecturaModelo, errorExperimento, precisionExperimento, tiempoEjecutado, direccionCompleta))
+                db_connection.commit()
+        finally:
+            db_connection.close()
+    else:
+        print("El archivo metricas.json no existe.")
+
+    flash('Entrenamiento de Transformers finalizado y resultados guardados.')
     return redirect(url_for('experimentadorA'))
-
-
-@app.route('/progreso', methods=['GET'])
-def progreso():
-    # Devolver el estado de la ejecución del script
-    return jsonify({'progreso': '50%'})
 
 
 @ app.route('/buscar_correo', methods=['POST'])
@@ -349,9 +417,9 @@ def enviar_correo_notificacion(email_usuario, nombre_usuario, modificaciones):
 
     Correo.send(msg)
 
-##############################################################################################################################################
-##################################################### CONFIGURACIÓN ADMINISTRADOR ############################################################
-##############################################################################################################################################
+############################################################################################################
+##################################### CONFIGURACIÓN ADMINISTRADOR ##########################################
+############################################################################################################
 
 # Configuración de la ruta para acceso de Administrador, siendo asegurada por medio de la libreria de "Login_Required"
 
@@ -386,7 +454,8 @@ def experimentadorA():
             u.Nombre,
             tb.TipoBasura,
             d.Tecnologia,
-            d.Ruta
+            d.Ruta,
+            d.idDataSetExp
         FROM
             dataexperiment d
         INNER JOIN
@@ -664,7 +733,6 @@ def editarUsuarioA(correo):
 
 
 @app.route('/evaluadorA')
-@login_required
 def evaluadorA():
     cursor = BaseDatos.connection.cursor()
     cursor.execute("""
@@ -697,9 +765,70 @@ def evaluadorA():
     cursor.close()
     return render_template('admin/evaluadorA.html', pesos=pesos, databasuras=databasuras)
 
-##############################################################################################################################################
-####################################################### CONFIGURACIÓN TESTER #################################################################
-##############################################################################################################################################
+
+@app.route('/evaluarA', methods=['POST'])
+def evaluarA():
+    dataset_seleccionado = request.form.get('dataset')
+    pesos_seleccionados = request.form.getlist('Peso')
+
+    # Verificar si se han seleccionado exactamente dos pesos
+    if len(pesos_seleccionados) != 2:
+        flash('Debes seleccionar exactamente dos pesos para evaluar.')
+        return redirect(url_for('evaluarA'))
+
+    # Verificar si se ha seleccionado un dataset
+    if not dataset_seleccionado:
+        flash("Debes seleccionar 1 dataset y 2 pesos para continuar.")
+        return redirect(url_for('evaluarA'))
+
+    peso1 = pesos_seleccionados[0]
+    peso2 = pesos_seleccionados[1]
+
+    # Mostrar los valores seleccionados en el mensaje flash
+    print(
+        f"Los valores que escojiste son: Dataset: '{dataset_seleccionado}', 1 Peso: '{peso1}', 2 Peso: '{peso2}'")
+
+    # Cargar modelos y evaluar
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    modelo_yolo = cargar_modelo_yolo(pesos_seleccionados[0])
+    modelo_detr, procesador_detr = cargar_modelo_detr(
+        pesos_seleccionados[1], device)
+
+    resultados = evaluar_dataset(
+        dataset_seleccionado, modelo_yolo, modelo_detr, procesador_detr)
+
+    # Guardar resultados o pasarlos a la plantilla
+    return render_template('admin/resultados.html', resultados=resultados)
+
+
+def evaluar_dataset(dataset_path, modelo_yolo, modelo_detr, procesador_detr):
+    resultados = []
+    imagenes = obtener_imagenes(dataset_path)
+
+    for imagen_path in imagenes:
+        imagen = cv2.imread(imagen_path)
+
+        # Evaluar con YOLO
+        resultado_yolo = evaluar_yolo(modelo_yolo, imagen)
+
+        # Evaluar con DETR
+        resultado_detr = evaluar_detr(modelo_detr, procesador_detr, imagen)
+        print(resultado_detr)
+        print(resultado_yolo)
+        cv2.imshow(imagen)
+        resultados.append((resultado_yolo, resultado_detr))
+
+    return resultados
+
+
+@app.route('/resultados', methods=['GET'])
+def mostrar_resultados():
+    resultados = session.get('resultados', [])
+    return render_template('admin/resultados.html', resultados=resultados)
+
+############################################################################################################
+######################################### CONFIGURACIÓN TESTER #############################################
+############################################################################################################
 
 
 @app.route('/tester', methods=['GET', 'POST'])
