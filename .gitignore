@@ -7,6 +7,4 @@ src/Pesos/**
 src/Datasets/**
 sendgrid.env
 src/Models/Transformers/lightning_logs
-src/Models/YoloV5/
-!/src/Models/YoloV5/YOLOV5.py
-!/src/Models/YoloV5/yolov5s.yaml
+src/Models/YoloV5
