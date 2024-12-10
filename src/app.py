@@ -18,7 +18,7 @@ from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 from werkzeug.security import generate_password_hash
 from config import configuracion
 from Models.ModeloUsuario import ModeloUsuario
-from Evaluador import cargar_modelo_yolo, cargar_modelo_detr, evaluar_detr, evaluar_yolo, obtener_imagenes
+from PIL import Image
 
 # Inicialización de la Aplicación
 app = Flask(__name__)
@@ -766,10 +766,15 @@ def evaluadorA():
     return render_template('admin/evaluadorA.html', pesos=pesos, databasuras=databasuras)
 
 
-@app.route('/evaluarA', methods=['POST'])
+@app.route('/evaluarA', methods=['GET', 'POST'])
 def evaluarA():
     dataset_seleccionado = request.form.get('dataset')
     pesos_seleccionados = request.form.getlist('Peso')
+    nombre_evaluacion = request.form.get('nombre_evaluacion')
+
+    if not nombre_evaluacion:
+        flash("Debes proporcionar un nombre para la evaluación.")
+        return redirect(url_for('evaluarA'))
 
     # Verificar si se han seleccionado exactamente dos pesos
     if len(pesos_seleccionados) != 2:
@@ -781,50 +786,51 @@ def evaluarA():
         flash("Debes seleccionar 1 dataset y 2 pesos para continuar.")
         return redirect(url_for('evaluarA'))
 
-    peso1 = pesos_seleccionados[0]
-    peso2 = pesos_seleccionados[1]
+    PesoYolo = pesos_seleccionados[0]
+    PesoDETR = pesos_seleccionados[1]
+
+    directorio_base = os.path.join(
+        "C:\\Users\\nayel\\Desktop\\Estadia - AVAO191844\\Sistema\\src\\Evaluaciones", nombre_evaluacion)
+
+    directorio_yolo = os.path.join(directorio_base, 'YOLO')
+    os.makedirs(directorio_yolo, exist_ok=True)
+
+    directorio_detr = os.path.join(directorio_base, 'DETR')
+    os.makedirs(directorio_detr, exist_ok=True)
 
     # Mostrar los valores seleccionados en el mensaje flash
     print(
-        f"Los valores que escojiste son: Dataset: '{dataset_seleccionado}', 1 Peso: '{peso1}', 2 Peso: '{peso2}'")
+        f"Los valores que escojiste son: Dataset: '{dataset_seleccionado}', \nPeso de YOLO: '{PesoYolo}', \nPeso DETR: '{PesoDETR}' \nY los directorios son: \n'{directorio_yolo}',\n'{directorio_detr}'")
 
-    # Cargar modelos y evaluar
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    modelo_yolo = cargar_modelo_yolo(pesos_seleccionados[0])
-    modelo_detr, procesador_detr = cargar_modelo_detr(
-        pesos_seleccionados[1], device)
+    try:
+        print("Iniciando evaluación de YOLO...")
+        resultado_yolo = subprocess.run([r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\Sistema\Scripts\python.exe',
+                                         r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\EvaluarYOLO.py', "--weights", PesoYolo, "--source", dataset_seleccionado, "--guardado", directorio_yolo], shell=True, capture_output=True, text=True, check=True)
 
-    resultados = evaluar_dataset(
-        dataset_seleccionado, modelo_yolo, modelo_detr, procesador_detr)
+        if resultado_yolo.returncode == 0:
+            print("Evaluación de YOLO completada correctamente.")
+        else:
+            print("Error en la evaluación de YOLO:", resultado_yolo.stderr)
+            flash("Error al ejecutar YOLO.")
+            return redirect(url_for('evaluadorA'))
+
+        print("Iniciando evaluación de Transformers...")
+        resultado_detr = subprocess.run([r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\Sistema\Scripts\python.exe',
+                                         r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\EvaluarDETR.py', "--weights", PesoDETR, "--source", dataset_seleccionado, "--guardado", directorio_detr], shell=True, capture_output=True, text=True, check=True)
+
+        if resultado_detr.returncode == 0:
+            print("Evaluación de DETR completada correctamente.")
+        else:
+            print("Error en la evaluación de DETR:", resultado_detr.stderr)
+            flash("Error al ejecutar DETR.")
+            return redirect(url_for('evaluadorA'))
+
+    except Exception as e:
+        flash(f"Error al ejecutar YOLO: {str(e)}")
+        return redirect(url_for('evaluadorA'))
 
     # Guardar resultados o pasarlos a la plantilla
-    return render_template('admin/resultados.html', resultados=resultados)
-
-
-def evaluar_dataset(dataset_path, modelo_yolo, modelo_detr, procesador_detr):
-    resultados = []
-    imagenes = obtener_imagenes(dataset_path)
-
-    for imagen_path in imagenes:
-        imagen = cv2.imread(imagen_path)
-
-        # Evaluar con YOLO
-        resultado_yolo = evaluar_yolo(modelo_yolo, imagen)
-
-        # Evaluar con DETR
-        resultado_detr = evaluar_detr(modelo_detr, procesador_detr, imagen)
-        print(resultado_detr)
-        print(resultado_yolo)
-        cv2.imshow(imagen)
-        resultados.append((resultado_yolo, resultado_detr))
-
-    return resultados
-
-
-@app.route('/resultados', methods=['GET'])
-def mostrar_resultados():
-    resultados = session.get('resultados', [])
-    return render_template('admin/resultados.html', resultados=resultados)
+    return redirect(url_for('evaluadorA'))
 
 ############################################################################################################
 ######################################### CONFIGURACIÓN TESTER #############################################
@@ -935,10 +941,10 @@ def agregarDataset():
     validacion_fallida = False
 
     if tecnologia == "YOLO":
-        validacion_fallida, mensaje_error, cantidad_total, cantidad_valid = validar_estructura_yolo(
+        validacion_fallida, mensaje_error, cantidad_total, cantidad_test = validar_estructura_yolo(
             archivos, formato)
     elif tecnologia == "Transformer":
-        validacion_fallida, mensaje_error, cantidad_total, cantidad_valid = validar_estructura_transformer(
+        validacion_fallida, mensaje_error, cantidad_total, cantidad_test = validar_estructura_transformer(
             archivos, formato)
 
     # Si la validación falla, regresar a la página y mantener los datos
@@ -957,72 +963,82 @@ def agregarDataset():
             ruta_guardado = os.path.join(
                 app.config['UPLOAD_FOLDER'], ruta_base)
 
-            # Si la tecnología es YOLO, agregar la ruta "valid/images"
+            # Si la tecnología es YOLO, agregar la ruta "test/images"
             if tecnologia == "YOLO":
-                ruta_valid = os.path.join(ruta_guardado, 'valid', 'images')
+                ruta_test = os.path.join(ruta_guardado, 'test', 'images')
 
-            # Si la tecnología es Transformer, agregar solo la carpeta "valid"
+            # Si la tecnología es Transformer, agregar solo la carpeta "test"
             elif tecnologia == "Transformer":
-                ruta_valid = os.path.join(ruta_guardado, 'valid')
+                ruta_test = os.path.join(ruta_guardado, 'test')
 
     # Guardar los datos en la base de datos
     guardar_dataset(nombre_dataset, ruta_guardado, formato,
-                    tecnologia, tipo_basura, cantidad_total, cantidad_valid, ruta_valid)
+                    tecnologia, tipo_basura, cantidad_total, cantidad_test, ruta_test)
 
     flash("El dataset '{nombre_dataset}' ha sido guardado correctamente.")
     return redirect(url_for('experimentadorA'))
 
 
 def validar_estructura_yolo(archivos, formato):
+    # Ruta base donde se encuentran los datasets
+    base_datasets = "C:\\Users\\nayel\\Desktop\\Estadia - AVAO191844\\Sistema\\src\\Datasets"
+
+    ruta = archivos[0]
+    ruta_base = os.path.dirname(ruta.filename)
+    ruta_guardado = os.path.join(base_datasets, ruta_base)
+
     # Diccionario para almacenar las rutas de archivos por carpetas para YOLO
     dataset_estructura_yolo = {
         "train": {"labels": [], "images": []},
         "test": {"labels": [], "images": []},
         "valid": {"labels": [], "images": []}
     }
+
     error_formato = False
     error_carpeta = False
     formato_correcto = True
 
     # Procesar todos los archivos recibidos
     for archivo in archivos:
-        # Obtener la ruta relativa del archivo dentro del directorio
         ruta_relativa = archivo.filename
+
+        # Convertir a ruta absoluta agregando la carpeta "Datasets"
+        ruta_absoluta = os.path.join(base_datasets, ruta_relativa)
 
         if 'train/' in ruta_relativa:
             if '/labels/' in ruta_relativa and ruta_relativa.endswith('.txt'):
                 dataset_estructura_yolo['train']['labels'].append(
-                    ruta_relativa)
+                    ruta_absoluta)
             elif '/images/' in ruta_relativa:
                 if ruta_relativa.endswith(formato):
                     dataset_estructura_yolo['train']['images'].append(
-                        ruta_relativa)
+                        ruta_absoluta)
                 else:
                     error_formato = True
                     formato_correcto = False
 
         elif 'test/' in ruta_relativa:
             if '/labels/' in ruta_relativa and ruta_relativa.endswith('.txt'):
-                dataset_estructura_yolo['test']['labels'].append(ruta_relativa)
+                dataset_estructura_yolo['test']['labels'].append(ruta_absoluta)
             elif '/images/' in ruta_relativa:
                 if ruta_relativa.endswith(formato):
                     dataset_estructura_yolo['test']['images'].append(
-                        ruta_relativa)
+                        ruta_absoluta)
                 else:
                     error_formato = True
-                    formato_correcto = False  # Si encuentra un formato incorrecto
+                    formato_correcto = False
 
         elif 'valid/' in ruta_relativa:
             if '/labels/' in ruta_relativa and ruta_relativa.endswith('.txt'):
                 dataset_estructura_yolo['valid']['labels'].append(
-                    ruta_relativa)
+                    ruta_absoluta)
             elif '/images/' in ruta_relativa:
                 if ruta_relativa.endswith(formato):
                     dataset_estructura_yolo['valid']['images'].append(
-                        ruta_relativa)
+                        ruta_absoluta)
                 else:
                     error_formato = True
-                    formato_correcto = False  # Si encuentra un formato incorrecto
+                    formato_correcto = False
 
     # Si el formato es incorrecto, regresamos el error
     if error_formato:
@@ -1045,8 +1061,78 @@ def validar_estructura_yolo(archivos, formato):
     # Calcular la cantidad total de imágenes
     cantidad_total = cantidad_train + cantidad_test + cantidad_valid
 
-    # Retornar los valores de las imágenes si es necesario junto con el estado de validación
-    return False, "", cantidad_total, cantidad_valid
+    # Generar el archivo JSON en la carpeta "test"
+    generar_coco_json(dataset_estructura_yolo['test']['images'],
+                      dataset_estructura_yolo['test']['labels'], ruta_guardado)
+
+    return False, "", cantidad_total, cantidad_test
+
+
+def generar_coco_json(imagenes, etiquetas, ruta_base):
+    # Ruta para guardar el archivo
+    output_json_path = os.path.join(
+        ruta_base, "test", "images", "_annotations.coco.json")
+
+    # Inicializar estructura COCO
+    coco_format = {
+        "images": [],
+        "annotations": [],
+        "categories": []
+    }
+
+    # Agregar la única categoría "Garbage"
+    coco_format["categories"].append({
+        "id": 0,  # ID único de la categoría
+        "name": "Garbage",
+        "supercategory": "none"
+    })
+
+    # Procesar imágenes y anotaciones
+    annotation_id = 1  # ID único para cada anotación
+    for img_id, img_path in enumerate(imagenes):
+        # Información de la imagen
+        img = Image.open(img_path)
+        width, height = img.size
+        file_name = os.path.basename(img_path)
+
+        coco_format["images"].append({
+            "id": img_id,
+            "file_name": file_name,
+            "height": height,
+            "width": width
+        })
+
+        # Leer archivo de anotaciones (YOLO)
+        label_file = next((etiqueta for etiqueta in etiquetas if os.path.basename(
+            etiqueta).split('.')[0] == os.path.splitext(file_name)[0]), None)
+        if label_file:
+            with open(label_file, 'r') as f:
+                for line in f:
+                    _, x_center, y_center, bbox_width, bbox_height = map(
+                        float, line.strip().split())
+
+                    # Convertir a formato COCO
+                    x_min = (x_center - bbox_width / 2) * width
+                    y_min = (y_center - bbox_height / 2) * height
+                    bbox_width *= width
+                    bbox_height *= height
+
+                    coco_format["annotations"].append({
+                        "id": annotation_id,
+                        "image_id": img_id,
+                        "category_id": 0,  # Siempre es "Garbage"
+                        "bbox": [x_min, y_min, bbox_width, bbox_height],
+                        "area": bbox_width * bbox_height,
+                        "segmentation": [],
+                        "iscrowd": 0
+                    })
+                    annotation_id += 1
+
+    # Guardar en un archivo JSON
+    with open(output_json_path, 'w') as json_file:
+        json.dump(coco_format, json_file, indent=4)
+
+    print(f"Archivo annotations.json generado en {output_json_path}")
 
 
 def validar_estructura_transformer(archivos, formato):
@@ -1116,10 +1202,10 @@ def validar_estructura_transformer(archivos, formato):
     # Calcular la cantidad total de imágenes
     cantidad_total = cantidad_train + cantidad_test + cantidad_valid
 
-    return False, "", cantidad_total, cantidad_valid
+    return False, "", cantidad_total, cantidad_test
 
 
-def guardar_dataset(nombre, ruta, formato, tecnologia, tipo_basura, cantidad_total, cantidad_valid, ruta_valid):
+def guardar_dataset(nombre, ruta, formato, tecnologia, tipo_basura, cantidad_total, cantidad_test, ruta_test):
     usuario_id = current_user.id
     cursor = BaseDatos.connection.cursor()
 
@@ -1138,7 +1224,7 @@ def guardar_dataset(nombre, ruta, formato, tecnologia, tipo_basura, cantidad_tot
     print(usuario_id, id_tipo_basura, nombre, formato,
           cantidad_total, tecnologia, ruta)
     print(usuario_id, id_tipo_basura, nombre, formato,
-          cantidad_valid, ruta_valid)
+          cantidad_test, ruta_test)
     try:
         cursor.execute(
             "INSERT INTO dataexperiment (idUsuarios, idTiposBasura, NombreDataExp, FormatoExp, Imagenes, Tecnologia, Ruta) "
@@ -1149,7 +1235,7 @@ def guardar_dataset(nombre, ruta, formato, tecnologia, tipo_basura, cantidad_tot
         cursor.execute("INSERT INTO datasetprueba (idUsuarios, idTiposBasura, NombreData, Formato, Cantidad, Ruta) "
                        "VALUES (%s, %s, %s, %s, %s, %s)",
                        (usuario_id, id_tipo_basura, nombre, formato,
-                        cantidad_valid, ruta_valid))
+                        cantidad_test, ruta_test))
 
         BaseDatos.connection.commit()
     except Exception as e:
