@@ -1249,3 +1249,41 @@ gap: 40px;
 #FINAL{
   margin-top: 50px;
 }
+/**************************************REPORTES****************************************/
+.dashboard-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  padding: 20px;
+  font-family: TODON;
+}
+.chart-container {
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  font-family: TODON;
+}
+.metrics-summary {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-around;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.metric-card {
+  text-align: center;
+  padding: 10px;
+  font-family: TODON;
+}
+.metric-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #2c3e50;
+}
+.metric-label {
+  color: #7f8c8d;
+  font-size: 14px;
+}

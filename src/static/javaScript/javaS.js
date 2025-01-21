@@ -19,21 +19,4 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
     }
-    /*
-    // Código específico para otra página
-    if (pageTitle.includes('Tipos de Basura')) {
-        function mostrarNombreDirectorio() {
-            const input = document.getElementById('Dataset');
-            if (input.files.length > 0) {
-                const fullPath = input.files[0].webkitRelativePath || input.files[0].name;
-                const directoryPath = fullPath.split('/').slice(0, -1).join('/');
-        
-                // Si quieres mostrar la ruta absoluta
-                const absolutePath = input.files[0].path || directoryPath;
-        
-                // Mostrar la ruta completa en el campo de texto
-                document.getElementById('nombre-Dataset').value = absolutePath;
-            }
-        }
-    }*/
 });

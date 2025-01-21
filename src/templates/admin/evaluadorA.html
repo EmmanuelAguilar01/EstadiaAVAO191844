@@ -5,6 +5,7 @@
 <form action="/evaluarA" method="POST">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <br>
+    <h3 id="TextoN">Seleccione un dataset para evaluar:</h3>
 <div class="UnaTabla">
     <table id="Tabla">
         <thead>
@@ -20,15 +21,15 @@
         <tbody>
             {% for databasura in databasuras %}
             <tr>
-                <td >{{ databasura.0 }}</td>
                 <td >{{ databasura.1 }}</td>
                 <td >{{ databasura.2 }}</td>
                 <td >{{ databasura.3 }}</td>
                 <td >{{ databasura.4 }}</td>
+                <td >{{ databasura.5 }}</td>
                 <td >                        
                     <div class="radio-buttons">
                         <label class="radio-button">
-                            <input type="radio" name="dataset" value="{{ databasura.5 }}">
+                            <input type="radio" name="dataset" value="{{ databasura.6 }}" onclick="document.getElementById('hiddenDatasetId').value='{{ databasura.0 }}'">
                             <div class="radio-circle"></div>
                         </label>
                     </div>
@@ -37,8 +38,10 @@
             {% endfor %}
         </tbody>
     </table>
+    <input type="hidden" id="hiddenDatasetId" name="datasetId" value="">
 </div>
-<br><br>
+<br>
+<h3 id="TextoN">Seleccione el modelo Transformer a evaluar:</h3>
 <div class="UnaTabla">
     <table id="Tabla">
         <thead>
@@ -53,7 +56,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for peso in pesos %}
+            {% for peso in pesosT %}
             <tr>
                 <td >{{ peso.0 }}</td>
                 <td >{{ peso.1 }}</td>
@@ -63,7 +66,7 @@
                 <td >{{ peso.6 }}</td>
                 <td >                        
                     <label class="container-chbx">
-                        <input type="checkbox" name="Peso" value="{{ peso.5 }}">
+                        <input type="radio" name="PesoT" value="{{ peso.5 }}">
                         <div class="checkmark"></div>
                     </label>
                 </td>
@@ -72,7 +75,42 @@
         </tbody>
     </table>
 </div>
-<label for="nombre_evaluacion">Nombre de la Evaluación:</label>
+<br>
+<h3 id="TextoN">Seleccione el modelo Yolo a evaluar:</h3>
+<div class="UnaTabla">
+    <table id="Tabla">
+        <thead>
+            <tr>
+                <td>Nombre</td>
+                <td>Arquitectura</td>
+                <td>% Error</td>
+                <td>% Precisión</td>
+                <td>Tiempo</td>
+                <td>Usuario</td>
+                <td>Seleccionar</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for peso in pesosY %}
+            <tr>
+                <td >{{ peso.0 }}</td>
+                <td >{{ peso.1 }}</td>
+                <td >{{ peso.2 }}</td>
+                <td >{{ peso.3 }}</td>
+                <td >{{ peso.4 }}</td>
+                <td >{{ peso.6 }}</td>
+                <td >                        
+                    <label class="container-chbx">
+                        <input type="radio" name="PesoY" value="{{ peso.5 }}">
+                        <div class="checkmark"></div>
+                    </label>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<label for="nombre_evaluacion" style="font-family: TodoC; font-size: 20px;">Nombre de la Evaluación:</label><br>
 <input type="text" id="nombre_evaluacion" name="nombre_evaluacion" required>
 <br>
 <div class="contenedor-botones2">

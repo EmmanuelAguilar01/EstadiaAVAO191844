@@ -7,10 +7,11 @@ import threading
 import pymysql
 import torch
 import cv2
+import time
 from pathlib import Path
 from flask_mail import Mail, Message
 from flask_mysqldb import MySQL, MySQLdb
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session, send_from_directory
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_wtf.csrf import CSRFProtect
 from flask_jwt_extended import create_access_token, JWTManager, decode_token
@@ -127,6 +128,12 @@ def recuperacion():
 @app.route('/new')
 def new():
     return render_template('test/nuevoUsuario.html')
+
+
+@app.route('/<path:filename>')
+def serve_file(filename):
+    base_path = r"C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema"
+    return send_from_directory(base_path, filename)
 
 # Configuración del módulo para agregar un nuevo usuario sin ininicar sesión
 
@@ -472,7 +479,31 @@ def experimentadorA():
 @app.route('/reportesA')
 @login_required
 def reportesA():
-    return render_template('admin/reportesA.html')
+    cursor = BaseDatos.connection.cursor()
+    cursor.execute("""
+        SELECT
+            NombreEvaluacion, TiempoMinYOLO, ErrorYOLO, PrecisionYOLO, SensibilidadYOLO, EspecifidadYOLO, TiempoMinDETR, ErrorDETR, PrecisionDETR, SensibilidadDETR, EspecifidadDETR
+        FROM
+            evaluacion""")
+
+    evaluaciones = cursor.fetchall()
+    cursor.close()
+    datos_graficos = [
+        {
+            'nombre': eval[0],
+            'tiempo_yolo': eval[1].total_seconds() / 60 if isinstance(eval[1], timedelta) else float(eval[1]),
+            'error_yolo': float(eval[2]) if eval[2] else 0,
+            'precision_yolo': float(eval[3]) if eval[3] else 0,
+            'sensibilidad_yolo': float(eval[4]) if eval[4] else 0,
+            'especifidad_yolo': float(eval[5]) if eval[5] else 0,
+            'tiempo_detr': eval[6].total_seconds() / 60 if isinstance(eval[6], timedelta) else float(eval[6]),
+            'error_detr': float(eval[7]) if eval[7] else 0,
+            'precision_detr': float(eval[8]) if eval[8] else 0,
+            'sensibilidad_detr': float(eval[9]) if eval[9] else 0,
+            'especifidad_detr': float(eval[10]) if eval[10] else 0
+        }
+        for eval in evaluaciones]
+    return render_template('admin/reportesA.html', evaluaciones=evaluaciones, datos_graficos=datos_graficos)
 
 
 @ app.route('/crudBasuraA')
@@ -743,16 +774,36 @@ def evaluadorA():
             e.Precision,
             e.TiempoHoras,
             e.Pesos,
-            u.Nombre AS NombreUsuario 
+            u.Nombre AS NombreUsuario
         FROM
             experimentador e
         INNER JOIN
             Usuarios u ON e.idUsuarios = u.idUsuarios
+        WHERE
+            e.Arquitectura = 'YOLOV5'
     """)
 
-    pesos = cursor.fetchall()
+    pesosY = cursor.fetchall()
     cursor.execute("""
-        SELECT d.NombreData, d.Formato, d.Cantidad, u.Nombre, tb.TipoBasura,d.Ruta
+        SELECT
+            e.NombreModelo,
+            e.Arquitectura,
+            e.PorcentajeErr,
+            e.Precision,
+            e.TiempoHoras,
+            e.Pesos,
+            u.Nombre AS NombreUsuario
+        FROM
+            experimentador e
+        INNER JOIN
+            Usuarios u ON e.idUsuarios = u.idUsuarios
+        WHERE
+            e.Arquitectura = 'Transformer'
+    """)
+
+    pesosT = cursor.fetchall()
+    cursor.execute("""
+        SELECT d.idDataSetPrueba,d.NombreData, d.Formato, d.Cantidad, u.Nombre, tb.TipoBasura,d.Ruta
         FROM
             datasetprueba d
         INNER JOIN
@@ -763,21 +814,25 @@ def evaluadorA():
 
     databasuras = cursor.fetchall()
     cursor.close()
-    return render_template('admin/evaluadorA.html', pesos=pesos, databasuras=databasuras)
+    return render_template('admin/evaluadorA.html', pesosY=pesosY, pesosT=pesosT, databasuras=databasuras)
 
 
 @app.route('/evaluarA', methods=['GET', 'POST'])
 def evaluarA():
+    idDataset_seleccionado = request.form.get('datasetId')
     dataset_seleccionado = request.form.get('dataset')
-    pesos_seleccionados = request.form.getlist('Peso')
+    PesoYolo = request.form.get('PesoY')
+    PesoDETR = request.form.get('PesoT')
     nombre_evaluacion = request.form.get('nombre_evaluacion')
+
+    session['idDatasetPrueba'] = idDataset_seleccionado
 
     if not nombre_evaluacion:
         flash("Debes proporcionar un nombre para la evaluación.")
         return redirect(url_for('evaluarA'))
 
     # Verificar si se han seleccionado exactamente dos pesos
-    if len(pesos_seleccionados) != 2:
+    if not PesoYolo or not PesoDETR:
         flash('Debes seleccionar exactamente dos pesos para evaluar.')
         return redirect(url_for('evaluarA'))
 
@@ -786,11 +841,14 @@ def evaluarA():
         flash("Debes seleccionar 1 dataset y 2 pesos para continuar.")
         return redirect(url_for('evaluarA'))
 
-    PesoYolo = pesos_seleccionados[0]
-    PesoDETR = pesos_seleccionados[1]
+    print("Peso de YOLO: ", PesoYolo)
+    print("Peso de DETR: ", PesoDETR)
 
     directorio_base = os.path.join(
         "C:\\Users\\nayel\\Desktop\\Estadia - AVAO191844\\Sistema\\src\\Evaluaciones", nombre_evaluacion)
+
+    # Guardar en la sesión
+    session['nombre_evaluacion'] = nombre_evaluacion
 
     directorio_yolo = os.path.join(directorio_base, 'YOLO')
     os.makedirs(directorio_yolo, exist_ok=True)
@@ -798,14 +856,24 @@ def evaluarA():
     directorio_detr = os.path.join(directorio_base, 'DETR')
     os.makedirs(directorio_detr, exist_ok=True)
 
+    session['directorio_yolo'] = os.path.join(directorio_yolo, 'exp')
+    session['directorio_detr'] = directorio_detr
+
     # Mostrar los valores seleccionados en el mensaje flash
     print(
         f"Los valores que escojiste son: Dataset: '{dataset_seleccionado}', \nPeso de YOLO: '{PesoYolo}', \nPeso DETR: '{PesoDETR}' \nY los directorios son: \n'{directorio_yolo}',\n'{directorio_detr}'")
 
     try:
         print("Iniciando evaluación de YOLO...")
+        inicio_yolo = time.time()
+
         resultado_yolo = subprocess.run([r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\Sistema\Scripts\python.exe',
                                          r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\EvaluarYOLO.py', "--weights", PesoYolo, "--source", dataset_seleccionado, "--guardado", directorio_yolo], shell=True, capture_output=True, text=True, check=True)
+
+        tiempo_yolo_segundos = time.time() - inicio_yolo
+        horas_yolo, resto_segundos = divmod(int(tiempo_yolo_segundos), 3600)
+        minutos_yolo, segundos_yolo = divmod(resto_segundos, 60)
+        tiempo_yolo_formateado = f"{horas_yolo:02}:{minutos_yolo:02}:{segundos_yolo:02}"
 
         if resultado_yolo.returncode == 0:
             print("Evaluación de YOLO completada correctamente.")
@@ -815,8 +883,16 @@ def evaluarA():
             return redirect(url_for('evaluadorA'))
 
         print("Iniciando evaluación de Transformers...")
+        inicio_detr = time.time()
+
         resultado_detr = subprocess.run([r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\Sistema\Scripts\python.exe',
                                          r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\EvaluarDETR.py', "--weights", PesoDETR, "--source", dataset_seleccionado, "--guardado", directorio_detr], shell=True, capture_output=True, text=True, check=True)
+
+        tiempo_detr_segundos = time.time() - inicio_detr
+        horas_detr, resto_segundos_detr = divmod(
+            int(tiempo_detr_segundos), 3600)
+        minutos_detr, segundos_detr = divmod(resto_segundos_detr, 60)
+        tiempo_detr_formateado = f"{horas_detr:02}:{minutos_detr:02}:{segundos_detr:02}"
 
         if resultado_detr.returncode == 0:
             print("Evaluación de DETR completada correctamente.")
@@ -825,20 +901,198 @@ def evaluarA():
             flash("Error al ejecutar DETR.")
             return redirect(url_for('evaluadorA'))
 
+        print("Llegó a la creación del archivo JSON")
+        datos_evaluacion = {
+            "nombre_evaluacion": nombre_evaluacion,
+            "tiempo_ejecucion_yolo": tiempo_yolo_formateado,
+            "tiempo_ejecucion_detr": tiempo_detr_formateado
+        }
+
+        ruta_json = os.path.join(directorio_base, "MetricasEvaluacion.json")
+        # Crear directorio si no existe
+        os.makedirs(directorio_base, exist_ok=True)
+        with open(ruta_json, 'w', encoding='utf-8') as archivo_json:
+            json.dump(datos_evaluacion, archivo_json,
+                      indent=4, ensure_ascii=False)
+
+        print(f"Archivo JSON creado en: {ruta_json}")
+
     except Exception as e:
-        flash(f"Error al ejecutar YOLO: {str(e)}")
+        print(f"Error en evaluarA: {str(e)}")
+        flash(f"Error: {str(e)}")
         return redirect(url_for('evaluadorA'))
 
-    # Guardar resultados o pasarlos a la plantilla
-    return redirect(url_for('evaluadorA'))
+    return redirect(url_for('resultadosA'))
+
+
+@app.route('/resultadosA')
+def resultadosA():
+    # Directorios de las imágenes
+    yolo_dir = session.get('directorio_yolo')
+    detr_dir = session.get('directorio_detr')
+
+    directorio_base = r"C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema"
+
+    yolo_relative_dir = os.path.relpath(yolo_dir, directorio_base)
+    detr_relative_dir = os.path.relpath(detr_dir, directorio_base)
+
+    print("Directorio Yolo: ", yolo_relative_dir,
+          "\n", "Directorio DETR: ", detr_relative_dir)
+
+    if not yolo_dir or not detr_dir:
+        flash("No se encontraron directorios de resultados. Por favor, realiza una evaluación primero.")
+        return redirect(url_for('evaluarA'))
+
+    # Listar las imágenes de ambos directorios
+    yolo_images = [os.path.join(yolo_relative_dir, img).replace(
+        "\\", "/") for img in os.listdir(yolo_dir) if img.endswith(('.png', '.jpg', '.jpeg'))]
+    detr_images = [os.path.join(detr_relative_dir, img).replace(
+        "\\", "/") for img in os.listdir(detr_dir) if img.endswith(('.png', '.jpg', '.jpeg'))]
+
+    yolo_images.sort()
+    detr_images.sort()
+
+    # Pasar las rutas de imágenes a la plantilla
+    return render_template('admin/resultados.html', yolo_images=yolo_images, detr_images=detr_images, zip=zip)
+
+
+@app.route('/GuardarEvaluacion', methods=['POST'])
+def GuardarEvaluacion():
+    nombre_evaluacion = session.get('nombre_evaluacion')
+    idPrueba = session.get('idDatasetPrueba')
+
+    directorio_base = os.path.join(
+        "C:\\Users\\nayel\\Desktop\\Estadia - AVAO191844\\Sistema\\src\\Evaluaciones", nombre_evaluacion)
+
+    if not nombre_evaluacion:
+        flash("No se encontró el nombre de la evaluación en la sesión.")
+        return redirect(url_for('evaluarA'))
+
+    try:
+        print(directorio_base)
+        # Ruta del archivo JSON
+        ruta_json = os.path.join(directorio_base, "MetricasEvaluacion.json")
+
+        # Cargar el archivo JSON existente (si existe)
+        if os.path.exists(ruta_json):
+            with open(ruta_json, 'r', encoding='utf-8') as archivo_json:
+                datos_evaluacion = json.load(archivo_json)
+
+        tiempo_yolo = datos_evaluacion.get(
+            "tiempo_ejecucion_yolo", "Valor no encontrado")
+        tiempo_detr = datos_evaluacion.get(
+            "tiempo_ejecucion_detr", "Valor no encontrado")
+
+        # Inicializar contadores para YOLO y DETR
+        total_yolo = len([key for key in request.form.keys()
+                         if key.startswith('yolo_veredicto')])
+        total_detr = len([key for key in request.form.keys()
+                         if key.startswith('detr_veredicto')])
+
+        # Contadores de métricas
+        TP_yolo = FN_yolo = FP_yolo = TN_yolo = 0
+        TP_detr = FN_detr = FP_detr = TN_detr = 0
+
+        # Procesar resultados y validar simultáneamente
+        faltan_veredictos_yolo = False
+        faltan_veredictos_detr = False
+
+        for i in range(1, max(total_yolo, total_detr) + 1):
+            # YOLO
+            if i <= total_yolo:
+                veredicto_yolo = request.form.get(f'yolo_veredicto_{i}')
+                if not veredicto_yolo:
+                    faltan_veredictos_yolo = True
+                elif veredicto_yolo == '1':
+                    TP_yolo += 1
+                elif veredicto_yolo == '2':
+                    FN_yolo += 1
+                elif veredicto_yolo == '3':
+                    FP_yolo += 1
+                elif veredicto_yolo == '4':
+                    TN_yolo += 1
+
+            # DETR
+            if i <= total_detr:
+                veredicto_detr = request.form.get(f'detr_veredicto_{i}')
+                if not veredicto_detr:
+                    faltan_veredictos_detr = True
+                elif veredicto_detr == '1':
+                    TP_detr += 1
+                elif veredicto_detr == '2':
+                    FN_detr += 1
+                elif veredicto_detr == '3':
+                    FP_detr += 1
+                elif veredicto_detr == '4':
+                    TN_detr += 1
+
+        # Validación de veredictos
+        if faltan_veredictos_yolo:
+            flash("Por favor selecciona un veredicto para todas las imágenes de YOLO.")
+            return redirect(url_for('resultadosA'))
+        if faltan_veredictos_detr:
+            flash("Por favor selecciona un veredicto para todas las imágenes de DETR.")
+            return redirect(url_for('resultadosA'))
+
+        # Calcular métricas
+        def calcular_metricas(TP, FN, FP, TN):
+            precision = round(TP / (TP + FP), 4) if (TP + FP) > 0 else 0
+            error = round((FP + FN) / (TP + TN + FP + FN),
+                          4) if (TP + TN + FP + FN) > 0 else 0
+            sensibilidad = round(TP / (TP + FN), 4) if (TP + FN) > 0 else 0
+            especificidad = round(TN / (TN + FP), 4) if (TN + FP) > 0 else 0
+            return precision, error, sensibilidad, especificidad
+
+        precision_yolo, error_yolo, sensibilidad_yolo, especificidad_yolo = calcular_metricas(
+            TP_yolo, FN_yolo, FP_yolo, TN_yolo)
+        precision_detr, error_detr, sensibilidad_detr, especificidad_detr = calcular_metricas(
+            TP_detr, FN_detr, FP_detr, TN_detr)
+
+        # Imprimir o guardar métricas
+        print(
+            f"YOLO - Precisión: {precision_yolo}, Error: {error_yolo}, Sensibilidad: {sensibilidad_yolo}, Especificidad: {especificidad_yolo}")
+        print(
+            f"DETR - Precisión: {precision_detr}, Error: {error_detr}, Sensibilidad: {sensibilidad_detr}, Especificidad: {especificidad_detr}")
+
+        precision_yoloF = round((precision_yolo*100), 2)
+        error_yoloF = round((error_yolo*100), 2)
+        sensibilidad_yoloF = round((sensibilidad_yolo*100), 2)
+        especificidad_yoloF = round((especificidad_yolo*100), 2)
+        precision_detrF = round((precision_detr*100), 2)
+        error_detrF = round((error_detr*100), 2)
+        sensibilidad_detrF = round((sensibilidad_detr*100), 2)
+        especificidad_detrF = round((especificidad_detr*100), 2)
+
+        print(f"Precision YOLO: {precision_yoloF}")
+        print(f"Error YOLO: {error_yoloF}")
+        print(f"Sensibilidad YOLO: {sensibilidad_yoloF}")
+        print(f"Especificidad YOLO: {especificidad_yoloF}")
+        print(f"Precision DETR: {precision_detrF}")
+        print(f"Error DETR: {error_detrF}")
+        print(f"Sensibilidad DETR: {sensibilidad_detrF}")
+        print(f"Especificidad DETR: {especificidad_detrF}")
+
+        cursor = BaseDatos.connection.cursor()
+        sql = """INSERT INTO evaluacion (idDataSetPrueba,NombreEvaluacion,TiempoMinYOLO,ErrorYOLO,PrecisionYOLO,SensibilidadYOLO,EspecifidadYOLO,TiempoMinDETR,ErrorDETR,PrecisionDETR,SensibilidadDETR,EspecifidadDETR)
+                        VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}')""".format(idPrueba, nombre_evaluacion, tiempo_yolo, error_yoloF, precision_yoloF, sensibilidad_yoloF, especificidad_yoloF, tiempo_detr, error_detrF, precision_detrF, sensibilidad_detrF, especificidad_detrF)
+        cursor.execute(sql)
+        BaseDatos.connection.commit()
+        cursor.close()
+
+        flash("Evaluación guardada correctamente.", "success")
+        return redirect(url_for('reportesA'))
+
+    except Exception as e:
+        flash(f"Error al guardar la evaluación: {str(e)}", "danger")
+        return redirect(url_for('resultadosA'))
 
 ############################################################################################################
 ######################################### CONFIGURACIÓN TESTER #############################################
 ############################################################################################################
 
 
-@app.route('/tester', methods=['GET', 'POST'])
-@login_required
+@ app.route('/tester', methods=['GET', 'POST'])
+@ login_required
 def tester():
     return render_template('test/Tester.html')
 
@@ -904,8 +1158,8 @@ def enviar_correo_notificacion_tester(email_usuario, nombre_usuario):
     Correo.send(msg)
 
 
-@app.route('/CrudDatasetEval')
-@login_required
+@ app.route('/CrudDatasetEval')
+@ login_required
 def CrudDatasetEval():
     cursor = BaseDatos.connection.cursor()
     cursor.execute('SELECT TipoBasura FROM tiposBasura')
@@ -914,8 +1168,8 @@ def CrudDatasetEval():
     return render_template('admin/crudDatasetEval.html', tipos=tipos)
 
 
-@app.route('/CrudDatasetA')
-@login_required
+@ app.route('/CrudDatasetA')
+@ login_required
 def CrudDatasetA():
     cursor = BaseDatos.connection.cursor()
     cursor.execute('SELECT TipoBasura FROM tiposBasura')
@@ -924,7 +1178,7 @@ def CrudDatasetA():
     return render_template('admin/crudDatasetPruebaA.html', tipos=tipos)
 
 
-@app.route('/agregarDataset', methods=['POST'])
+@ app.route('/agregarDataset', methods=['POST'])
 def agregarDataset():
     archivos = request.files.getlist("Dataset[]")
     nombre_dataset = request.form.get('nombreDataset')

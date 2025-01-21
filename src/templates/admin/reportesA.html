@@ -1,5 +1,385 @@
 {% extends 'baseAdmin.html' %}
 {% block Titulo %}Reportes{% endblock %}
 {% block Cuerpo %}
-<p>HOLA ESTA ES LA VISTA DE REPORTES</p>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<h1 id="Cab">Reportes de Resultados</h1>
+<form action="" method="" enctype="multipart/form-data">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<br>
+<div class="UnaTabla">
+    <table id="Tabla">
+        <thead>
+            <tr>
+                <td>Nombre de la Prueba</td>
+                <td>Tiempo YOLO</td>
+                <td>Precisión YOLO</td>
+                <td>Error YOLO</td>
+                <td>Tiempo DETR</td>
+                <td>Precision DETR</td>
+                <td>Error DETR</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for evaluacion in evaluaciones %}
+            <tr>
+                <td >{{ evaluacion.0 }}</td>
+                <td >{{ evaluacion.1 }}</td>
+                <td >{{ evaluacion.3 }}</td>
+                <td >{{ evaluacion.2 }}</td>
+                <td >{{ evaluacion.6 }}</td>
+                <td >{{ evaluacion.8 }}</td>
+                <td >{{ evaluacion.7 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</head>
+<div class="metrics-summary">
+    <div class="metric-card">
+        <div class="metric-value" id="yoloAvgTime">-</div>
+        <div class="metric-label">Tiempo Promedio YOLO</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-value" id="detrAvgTime">-</div>
+        <div class="metric-label">Tiempo Promedio DETR</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-value" id="yoloAvgPrecision">-</div>
+        <div class="metric-label">Precisión Promedio YOLO</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-value" id="detrAvgPrecision">-</div>
+        <div class="metric-label">Precisión Promedio DETR</div>
+    </div>
+</div>
+<div class="dashboard-container">
+    <div class="chart-container">
+        <canvas id="tiempoPrecisionChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="errorChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="sensibilidadEspecificidadChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="precisionChart"></canvas>
+    </div>
+</div>
+
+<script>
+    // Función para validar número
+    function parseNumber(value) {
+        const parsed = parseFloat(value);
+        return isNaN(parsed) ? 0 : parsed;
+    }
+
+    // Función para formatear minutos a MM:SS
+    function formatMinutesToMMSS(minutes) {
+    const totalSeconds = Math.floor(minutes * 60);
+    const mm = Math.floor(totalSeconds / 60);
+    const ss = totalSeconds % 60;
+    return `${mm}:${ss.toString().padStart(2, '0')}`;
+    }
+
+    // Función para calcular promedios
+    function calculateAverages(data) {
+        if (!data || data.length === 0) {
+            console.error('No hay datos para calcular promedios');
+            return {
+                yoloTime: '00:00',
+                detrTime: '00:00',
+                yoloPrecision: '0.00%',
+                detrPrecision: '0.00%'
+            };
+        }
+
+        const sums = data.reduce((acc, curr) => {
+            return {
+                yoloTime: acc.yoloTime + parseNumber(curr.tiempo_yolo),
+                detrTime: acc.detrTime + parseNumber(curr.tiempo_detr),
+                yoloPrecision: acc.yoloPrecision + parseNumber(curr.precision_yolo),
+                detrPrecision: acc.detrPrecision + parseNumber(curr.precision_detr)
+            };
+        }, { yoloTime: 0, detrTime: 0, yoloPrecision: 0, detrPrecision: 0 });
+
+        const count = data.length;
+        return {
+            yoloTimeM: formatMinutesToMMSS(sums.yoloTime / count),
+            detrTimeM: formatMinutesToMMSS(sums.detrTime / count),
+            yoloPrecisionM: (sums.yoloPrecision / count).toFixed(2) + '%',
+            detrPrecisionM: (sums.detrPrecision / count).toFixed(2) + '%',
+            yoloPrecision: (sums.yoloPrecision / count).toFixed(2),
+            detrPrecision: (sums.detrPrecision / count).toFixed(2)
+        };
+    }
+
+    // Actualizar métricas resumen
+    function updateMetricsSummary(averages) {
+        document.getElementById('yoloAvgTime').textContent = `${averages.yoloTimeM} min`;
+        document.getElementById('detrAvgTime').textContent = `${averages.detrTimeM} min`;
+        document.getElementById('yoloAvgPrecision').textContent = `${averages.yoloPrecisionM}`;
+        document.getElementById('detrAvgPrecision').textContent = `${averages.detrPrecisionM}`;
+    }
+
+    // Función para crear el gráfico de tiempo vs precisión
+    function createTiempoPrecisionChart(data) {
+        const ctx = document.getElementById('tiempoPrecisionChart').getContext('2d');
+        return new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'YOLO',
+                    data: data.map(d => ({
+                        x: parseNumber(d.tiempo_yolo),
+                        y: parseNumber(d.precision_yolo)
+                    })),
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)'
+                },
+                {
+                    label: 'DETR',
+                    data: data.map(d => ({
+                        x: parseNumber(d.tiempo_detr),
+                        y: parseNumber(d.precision_detr)
+                    })),
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Tiempo vs Precisión',
+                        font: {
+                            size: 22,
+                            family: 'TODOC'
+                        }
+                    }
+                },
+                scales: { 
+                    x: { title: { display: true, text: 'Tiempo (minutos)',font: {
+                            size: 16,
+                            family: 'TODON'
+                        } }, grid: { color: '#747576' },
+                    ticks: {
+                    font: {
+                        family: 'TODOC',
+                        size: 14,
+                        }
+                    }
+                }, y: { title: { display: true, text: 'Precisión (%)',font: {
+                            size: 16,
+                            family: 'TODON'
+                        } }, grid: { color: '#747576' },
+                    ticks: {
+                    font:{
+                        family: 'TODOC',
+                        size: 14,
+                    } 
+                    }
+                } 
+            } }
+        }); 
+    }
+
+    // Función para crear el gráfico de error
+    function createErrorChart(data) {
+        const ctx = document.getElementById('errorChart').getContext('2d');
+        return new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(d => d.nombre),
+                datasets: [{
+                    label: 'Error YOLO',
+                    data: data.map(d => parseNumber(d.error_yolo)),
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)'
+                },
+                {
+                    label: 'Error DETR',
+                    data: data.map(d => parseNumber(d.error_detr)),
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Comparación de Error',
+                        font: {
+                            size: 22,
+                            family: 'TODOC'
+                        }
+                    }
+                },
+                scales: {
+                x: {
+                    grid: {
+                        color: '#747576'
+                    },
+                    ticks: {
+                    font:{
+                        family: 'TODOC',
+                        size: 10,
+                    } 
+                    }
+                },
+                y: {
+                    grid: {
+                        color: '#747576'
+                    },
+                    ticks: {
+                    font:{
+                        family: 'TODOC',
+                        size: 14,
+                    } 
+                    }
+                }
+                }
+            }
+        });
+    }
+
+    // Inicializar los gráficos con los datos
+    window.onload = function() {
+        // Obtener los datos del template de Flask
+        const datos = JSON.parse('{{ datos_graficos | tojson | safe }}');
+        
+        console.log('Datos cargados:', datos);  // Debug
+        
+        const averages = calculateAverages(datos);
+        updateMetricsSummary(averages);
+        createTiempoPrecisionChart(datos);
+        createErrorChart(datos);
+        createSensibilidadEspecificidadChart(datos);
+        createPrecisionChart(datos);
+    };
+
+   // Función para crear el gráfico de radar con más etiquetas
+function createSensibilidadEspecificidadChart(data) {
+    const ctx = document.getElementById('sensibilidadEspecificidadChart').getContext('2d');
+    return new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: ['Sensibilidad', 'Especificidad', 'Error', 'Precisión'],
+            datasets: [{
+                label: 'YOLO',
+                data: [
+                    data.reduce((acc, curr) => acc + parseNumber(curr.sensibilidad_yolo), 0) / data.length,
+                    data.reduce((acc, curr) => acc + parseNumber(curr.especifidad_yolo), 0) / data.length,
+                    data.reduce((acc, curr) => acc + parseNumber(curr.error_yolo), 0) / data.length,
+                    data.reduce((acc, curr) => acc + parseNumber(curr.precision_yolo), 0) / data.length
+                ],
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            },
+            {
+                label: 'DETR',
+                data: [
+                    data.reduce((acc, curr) => acc + parseNumber(curr.sensibilidad_detr), 0) / data.length,
+                    data.reduce((acc, curr) => acc + parseNumber(curr.especifidad_detr), 0) / data.length,
+                    data.reduce((acc, curr) => acc + parseNumber(curr.error_detr), 0) / data.length,
+                    data.reduce((acc, curr) => acc + parseNumber(curr.precision_detr), 0) / data.length
+                ],
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Métricas Promedio (Sensibilidad, Especificidad, Error, Precisión)',
+                    font: {
+                            size: 18,
+                            family: 'TODOC'
+                        }
+                }
+            },
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 100,
+                    grid: { color: '#747576' },
+                    ticks: {
+                    font:{
+                        family: 'TODOC',
+                        size: 12,
+                    } 
+                    }
+                }
+            }
+        }
+    });
+    }
+
+    function createPrecisionChart(data) {
+        const ctx = document.getElementById('precisionChart').getContext('2d');
+        return new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(d => d.nombre),
+                datasets: [{
+                    label: 'Precisión YOLO',
+                    data: data.map(d => parseNumber(d.precision_yolo)), // Convertimos a porcentaje
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)'
+                },
+                {
+                    label: 'Precisión DETR',
+                    data: data.map(d => parseNumber(d.precision_detr)), // Convertimos a porcentaje
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Comparación de Precisión (%)',
+                        font: {
+                            size: 22,
+                            family: 'TODOC'
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: '#747576'
+                        },
+                        ticks: {
+                    font:{
+                        family: 'TODOC',
+                        size: 10,
+                    } 
+                    }
+                    },
+                    y: {
+                        grid: {
+                            color: '#747576'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Precisión (%)'
+                        },
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function (value) {
+                                return value + '%'; // Agregar % a los valores del eje Y
+                            },
+                            font:{
+                        family: 'TODOC',
+                        size: 12,
+                        }}
+                    }
+                }
+            }
+        });
+    }
+</script>
 {% endblock %}

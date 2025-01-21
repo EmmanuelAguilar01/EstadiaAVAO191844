@@ -1,54 +1,43 @@
 {% extends 'baseAdmin.html' %}
-
 {% block Titulo %}Resultados de Evaluación{% endblock %}
-
 {% block Cuerpo %}
 <h1 id="Cab">Resultados de Evaluación</h1>
-
-<div class="UnaTabla">
-    <table id="Tabla">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Imagen</th>
-                <th>Resultados YOLO</th>
-                <th>Resultados DETR</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for resultado in resultados %}
-            <tr>
-                <td>{{ loop.index }}</td> <!-- Usamos loop.index para obtener el índice -->
-                <td>
-                    <img src="{{ url_for('static', filename='uploads/' + resultado[0]) }}" alt="Imagen" style="width: 150px; height: auto;">
-                </td>
-                <td>
-                    {% if resultado[1] %}
-                        <ul>
-                            {% for prediccion in resultado[1] %}
-                                <li>Clase: {{ prediccion['class'] }}, Confianza: {{ prediccion['confidence'] | round(2) }}</li>
-                            {% endfor %}
-                        </ul>
-                    {% else %}
-                        <p>No se detectaron objetos</p>
-                    {% endif %}
-                </td>
-                <td>
-                    {% if resultado[2] %}
-                        <ul>
-                            {% for i in range(resultado[2]['logits']|length) %}
-                                <li>Clase: {{ resultado[2]['logits'][i][0] }}, Caja: {{ resultado[2]['boxes'][i] }}</li>
-                            {% endfor %}
-                        </ul>
-                    {% else %}
-                        <p>No se detectaron objetos</p>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+<form action="GuardarEvaluacion" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="UnaTabla">
+        <table id="Tabla">
+            <thead>
+                <tr>
+                    <th>Resultados YOLO</th>
+                    <th>Veredicto Usuario YOLO</th>
+                    <th>Resultados DETR</th>
+                    <th>Veredicto Usuario DETR</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for yolo_img, detr_img in zip(yolo_images, detr_images) %}
+                <tr>
+                    <td><img src="{{ yolo_img }}" alt="Resultado YOLO" style="width: 150px;"></td>
+                    <td>
+                            <input type="radio" name="yolo_veredicto_{{ loop.index }}" value="1"> Hay basura y sí se detectó<br>
+                            <input type="radio" name="yolo_veredicto_{{ loop.index }}" value="2"> Hay basura y no se detectó<br>
+                            <input type="radio" name="yolo_veredicto_{{ loop.index }}" value="3"> No hay basura y se detectó<br>
+                            <input type="radio" name="yolo_veredicto_{{ loop.index }}" value="4"> No hay basura y no se detectó
+                    </td>
+                    <td><img src="{{ detr_img }}" alt="Resultado DETR" style="width: 150px;"></td>
+                    <td>
+                            <input type="radio" name="detr_veredicto_{{ loop.index }}" value="1"> Hay basura y sí se detectó<br>
+                            <input type="radio" name="detr_veredicto_{{ loop.index }}" value="2"> Hay basura y no se detectó<br>
+                            <input type="radio" name="detr_veredicto_{{ loop.index }}" value="3"> No hay basura y se detectó<br>
+                            <input type="radio" name="detr_veredicto_{{ loop.index }}" value="4"> No hay basura y no se detectó
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <button type="submit">Guardar evaluación</button>
+</form>
 
 <footer id="Pie">
     Estadia - Aguilar Vargas Antonio Emmanuel - AVAO191844
