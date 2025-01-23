@@ -2,62 +2,79 @@
 {% block Titulo %}Nuevo Usuario{% endblock %}
 {% block Personal%}
         body{
-            background-color: #0d0831;
+            background-color: #111521;
         }
 {% endblock %}
 {% block Cuerpo%}
-        <h1 id="Cab">Nuevo Usuario</h1>
-        <form action="/agregarNuevoA" method="POST">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <p class="TextoN"> Porfavor llena todos los campos a continuación:
-            <div class="Form">
-                <input type="text" class="Formulario" name="nombre" placeholder="NOMBRE">
-                <input type="text" class="Formulario" name="apellido" placeholder="APELLIDO">
+<h1 id="Cab">Nuevo Usuario</h1>
+<form action="/agregarNuevoA" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <p class="TextoN"> Porfavor llena todos los campos a continuación: </p>
+    <div class="FormNuevoUsuarioA">
+        <input type="text" class="Formulario" name="nombre" placeholder="NOMBRE">
+        <input type="text" class="Formulario" name="apellido" placeholder="APELLIDO">
+    </div>
+    
+    <br><br>
+    <div class="FormNuevoUsuarioA">
+        <input type="email" class="Formulario" name="correo" placeholder="CORREO">
+        <input type="text" class="Formulario" name="contra" placeholder="CONTRASEÑA">
+    </div>
+    <br>
+    <br>
+    <div class="FormNuevoUsuarioA">
+        <input type="text" class="Formulario" name="intereses" placeholder="INTERESES">
+        <input type="text" class="Formulario" name="procedencia" placeholder="PROCEDENCIA">
+    </div>
+    <br>
+    <br>
+    <label for="seleccionTipoUsuario" class="labelSeleccionador">Selecciona el tipo del nuevo usuario:</label>
+    <input type="checkboxNuevoUsuarioA" id="theme-modeNuevoUsuarioA" class="modeNuevoUsuarioA" hidden />
+        <div class="containerNuevoUsuarioA">
+            <div class="wrapNuevoUsuarioA">
+                <input type="radio" id="opcion1" name="tipo" value="Administrador" hidden class="rd-admin"/>
+                <label for="opcion1" class="labelNuevoUsuarioA" style="--index: 0;"><span>ADMINISTRADOR</span></label>
+
+                <input type="radio" id="opcion2" name="tipo" value="Tester" hidden class="rd-tester"/>
+                <label for="opcion2" class="labelNuevoUsuarioA" style="--index: 1;"><span>TESTER</span></label>
+
+                <div class="barNuevoUsuarioA"></div>
+                <div class="slidebarNuevoUsuarioA"></div>
             </div>
-            <br><br>
-            <div class="Form">
-                <input type="email" class="Formulario" name="correo" placeholder="CORREO">
-                <input type="text" class="Formulario" name="contra" placeholder="CONTRASEÑA">
-            </div>
-            <br>
-            <br>
-            <div class="Form">
-                <input type="text" class="Formulario" name="intereses" placeholder="INTERESES">
-                <input type="text" class="Formulario" name="procedencia" placeholder="PROCEDENCIA">
-            </div>
-            <br>
-            <br>
-            <div class="Form">
-                <p>Tipo de Usuario:</p>
-                <input type="radio" id="opcion1" name="tipo" value="Administrador">
-                <label for="opcion1">Administrador</label><br>
-                <input type="radio" id="opcion2" name="tipo" value="Tester">
-                <label for="opcion2">Tester</label><br>
-            </div>
-        
+        </div>
     <!--CONTENEDOR DE BOTONES-->
-            <div class="contenedor-botones2">
-                <button class="BotonAceptar" type="submit">
-                    <div class="IAceptar">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-plus" viewBox="0 0 16 16">
-                            <path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H1s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C9.516 10.68 8.289 10 6 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
-                            <path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z"/>
-                        </svg>
-                    </div>
-                    <span>Registrar</span>
-                </button>
-                <button class="BotonCancelar" type="button" onclick="location.href='{{ url_for('admin') }}'">
-                    <div class="ICancelar">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
-                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
-                        </svg>
-                    </div>
-                    <span>Cancelar</span>
-                </button>
+    <div class="contenedor-botones2">
+        <button class="botonRegistrar" type="submit">
+            <div class="svg-wrapper-1">
+                <div class="svg-wrapperRegistrar">
+                    <svg class="svgRegistrar" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-plus" viewBox="0 0 16 16">
+                        <path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H1s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C9.516 10.68 8.289 10 6 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
+                        <path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z"/>
+                    </svg>
+                </div>
             </div>
+            <span class="spanRegistrar">Registrar</span>
+        </button>
+
+        <button class="BotonCancelar" type="button" onclick="location.href='{{ url_for('admin') }}'">
+            <div class="svg-wrapper-1">
+                <div class="svg-wrapperCancelar">
+                    <svg class="svgCancelar" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                    </svg>
+                </div>
+            </div>
+            <span class="spanCancelar">Cancelar</span>
+        </button>
+    </div>
         </form>
         <footer id="Pie">
             Estadia - Aguilar Vargas Antonio Emmanuel - AVAO191844
         </footer>
 {% endblock %}
+
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
+    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+</svg>

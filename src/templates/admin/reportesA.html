@@ -2,8 +2,9 @@
 {% block Titulo %}Reportes{% endblock %}
 {% block Cuerpo %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <h1 id="Cab">Reportes de Resultados</h1>
-<form action="" method="" enctype="multipart/form-data">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 <br>
 <div class="UnaTabla">
@@ -65,6 +66,16 @@
     </div>
     <div class="chart-container">
         <canvas id="precisionChart"></canvas>
+        <div class="areaDescargar">
+            <div id="generarPDF" class="buttondescargar" data-tooltip="Preparando el archivo...">
+                <div class="button-wrapperdescargar">
+                <div class="textdescargar">Descargar reporte PDF</div>
+                    <span class="icondescargar">
+                    <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"></path></svg>
+                    </span>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -381,5 +392,114 @@ function createSensibilidadEspecificidadChart(data) {
             }
         });
     }
+    
+    document.addEventListener("DOMContentLoaded", function () {
+    const { jsPDF } = window.jspdf;
+    const tooltipElement = document.querySelector('.buttondescargar[data-tooltip]');
+    const buttonElement = document.querySelector('.buttondescargar');
+    let generatedPDF;
+
+    // Deshabilitar el botón hasta que el PDF esté listo
+    buttonElement.disabled = true;
+
+    window.addEventListener("load", async function () {
+      // Retraso para asegurar que todo esté completamente cargado
+      setTimeout(async () => {
+        try {
+          const pdf = new jsPDF();
+          let yPosition = 60;
+          let pageCounter = 1;
+
+          // Cargar logotipo
+          const logoURL = "/static/img/UPE_vertical.png";
+          const logoData = await fetch(logoURL)
+            .then(response => response.blob())
+            .then(blob => new Promise(resolve => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result);
+              reader.readAsDataURL(blob);
+            }));
+
+          // Agregar contenido al PDF
+          const addPageHeader = () => {
+            pdf.setFontSize(14);
+            pdf.text("Resultado de Reportes", 105, 10, { align: "center" });
+            pdf.text("Tesis - Antonio Emmanuel Aguilar Vargas", 105, 20, { align: "center" });
+
+            if (pageCounter === 1) {
+              const logoWidth = 50, logoHeight = 49;
+              const logoX = (pdf.internal.pageSize.width - logoWidth) / 2;
+              pdf.addImage(logoData, "PNG", logoX, 25, logoWidth, logoHeight);
+              yPosition += 50;
+            }
+          };
+
+          addPageHeader();
+
+        const charts = [
+        { id: "tiempoPrecisionChart", title: "Tiempo vs Precisión", description: "Este gráfico muestra la relación entre el tiempo y la precisión alcanzada por los modelos en sus evaluaciones." },
+        { id: "errorChart", title: "Error", description: "Este gráfico muestra la comparación del porcentaje de error del modelo respectivamente en cada evaluación." },
+        { id: "sensibilidadEspecificidadChart", title: "Sensibilidad y Especificidad", description: "Este gráfico muestra la relación de las métricas que se obtienen de todas las evaluaciones generadas diferenciandose por modelo.", height: 165 },
+        { id: "precisionChart", title: "Precisión", description: "Este gráfico muestra la precisión de cada modelo dividido por cada una de las evaluaciones realizadas." },
+        ];
+
+          for (const chart of charts) {
+            const canvas = document.getElementById(chart.id);
+            if (canvas) {
+              pdf.setFont("helvetica", "bold");
+              pdf.setFontSize(14);
+              pdf.text(chart.title, 10, yPosition);
+              yPosition += 10;
+
+              pdf.setFont("helvetica", "normal");
+              pdf.setFontSize(12);
+              const descriptionLines = pdf.splitTextToSize(chart.description, 180);
+              pdf.text(descriptionLines, 10, yPosition);
+              yPosition += (descriptionLines.length * 7);
+
+              const canvasImage = await html2canvas(canvas).then(canvasElement => canvasElement.toDataURL("image/png"));
+
+              const canvasHeight = chart.height || 90; // Usar altura específica si está definida, o por defecto 90px
+              pdf.addImage(canvasImage, "PNG", 15, yPosition, 180, canvasHeight);
+              yPosition += canvasHeight + 10;
+
+              if (chart !== charts[charts.length - 1]) {
+                pdf.addPage();
+                pageCounter++;
+                addPageHeader();
+                yPosition = 60;
+              }
+            }
+          }
+
+          // Calcular el tamaño del PDF
+          const pdfOutput = pdf.output("arraybuffer");
+          const pdfSizeInBytes = pdfOutput.byteLength;
+          const pdfSizeInMB = pdfSizeInBytes / (1024 * 1024);
+
+          // Actualizar tooltip con el tamaño del PDF
+          tooltipElement.setAttribute('data-tooltip', `Size: ${pdfSizeInMB.toFixed(2)} MB`);
+          console.log(`El tamaño del PDF es: ${pdfSizeInMB.toFixed(2)} MB`);
+
+          generatedPDF = pdf; // Guardar el PDF generado
+        } catch (error) {
+          console.error("Error generando el PDF:", error);
+          alert("Error al generar el PDF.");
+        } finally {
+          buttonElement.disabled = false; // Habilitar el botón
+        }
+      }, 3000); // Retraso de 3 segundos
+    });
+
+    // Descargar el PDF al hacer clic en el botón
+    buttonElement.addEventListener("click", function () {
+      if (generatedPDF) {
+        generatedPDF.save("Reporte_Evaluaciones.pdf");
+      } else {
+        alert("El PDF no está disponible.");
+      }
+    });
+  });
+
 </script>
 {% endblock %}

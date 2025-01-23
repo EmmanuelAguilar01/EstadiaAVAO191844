@@ -3,6 +3,12 @@
   background-color: #111521
 }
 
+.centrarBoton{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .cssbuttons-io-button {
   background: #6a7182;
   color: #111521;
@@ -334,6 +340,7 @@ a{
   font-size: 25px;
   color: rgb(255, 255, 255);
 }
+
 #Tabla{
   border-collapse: collapse;
   border: 5px inset #bbbbbc;
@@ -359,6 +366,8 @@ a{
 #Tabla td {
   text-align: center;
   white-space: nowrap;
+  vertical-align: middle;
+  
 }
 
 #Tabla th {
@@ -431,7 +440,128 @@ a{
 .radio-button:hover input[type="radio"]:checked + .radio-circle::before {
   background-color: #111521;
 }
+/*TABLA DE NUEVO USUARIO*/
+.UnaTablaUsuarioA {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  margin-bottom: 50px;
+  overflow-x: auto;
+}
 
+#TablaUsuarioA {
+  border-collapse: collapse;
+  border: 5px inset #bbbbbc;
+  align-items: center;
+  font-family: TodoN;
+  font-size: 20px;
+  color: #111521;
+  width: 100%;
+  max-width: 90%;
+  margin: 0 auto; 
+  border-radius: 22px;
+  table-layout: fixed;
+}
+
+#TablaUsuarioA thead {
+  font-family: TodoC;
+  background-color: #bbbbbc;
+}
+
+#TablaUsuarioA tbody {
+  background-color: #6a7182;
+}
+
+#TablaUsuarioA td, #TablaUsuarioA th {
+  text-align: center;
+  border: 1px solid #e8eaed; 
+  padding: 10px;
+  vertical-align: middle;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+.accionesUsuarioA {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 10px; 
+}
+
+.accionesUsuarioA a, .acciones .radio-buttons {
+  display: inline-flex;
+  align-items: center;
+}
+/**********BOTON EDITAR USUARIO***********/
+
+.BotonEditarUsuarioA{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background:#6a7182;
+  color: beige;
+  font-family: TodoN;
+  font-size: 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: .3s ease all;
+  margin-left: 5%;
+}
+
+.BotonEditarUsuarioA .IEditarUsuarioA{
+  display: flex;
+  align-items: center;
+  position:sticky;
+  z-index: 2;
+  right: 11.05%;
+}
+.BotonEditarUsuarioA .svgEditarUsuarioA{
+  color: beige;
+  width: 25px;
+  height: 25px;
+}
+.BotonEditarUsuarioA:hover{
+  background:#111521;
+}
+/****************ESTILOS DE BOTON TABLA ELIMINAR***********/
+.BotonEliminarUsuarioA{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background:#6a7182;
+  color: beige;
+  font-family: TodoN;
+  font-size: 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: .3s ease all;
+}
+
+.BotonEliminarUsuarioA .IEliminarUsuarioA{
+  display: flex;
+  align-items: center;
+  z-index: 2;
+  right: 11.05%;
+}
+
+.BotonEliminarUsuarioA .svgEliminarUsuarioA{
+  color: beige;
+  width: 25px;
+  height: 25px;
+}
+.BotonEliminarUsuarioA:hover{
+  background:#111521;
+}
 /**************************************FORMULARIO DATASET*******************************************/
 .contenedor-principal {
   display: flex;
@@ -487,22 +617,25 @@ input[type="text"] {
 /****************************************CONFIGURACIÓN CHECKBOX***************************************/
 
 .container-chbx input {
+  display: flex;
   position: absolute;
   opacity: 0;
   cursor: pointer;
   height: 0;
-  width: fit-content;
+  width: 0;
   border-radius: 5px;
+  justify-content: center;
  }
  
  .container-chbx {
-  width: fit-content;
-  display: block;
-  position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  position: relative;
   cursor: pointer;
-  font-size: 20px;
  }
- 
 
  .checkmark {
   position: relative;
@@ -539,7 +672,6 @@ input[type="text"] {
   transition: all 0.2s;
  }
  
- /* Style the checkmark/indicator */
  .container-chbx .checkmark:after {
   left: 0.4em;
   top: 0.14em;
@@ -550,53 +682,6 @@ input[type="text"] {
   transform: rotate(45deg);
  }
 /****************************************ESTILOS DE PAGINAS****************************************/
-#PEPE{
-  background:black
-}
-#inicioSesion{
-  background-image: url(../Pagina/Imagenes/iniciarSesion.jpg);
-  background-repeat: no-repeat;
-  background-size: cover;
-}
-#detectorU{
-  background-image: url(../Pagina/Imagenes/detectorU.jpg);
-  background-repeat: no-repeat;
-  background-size: cover;
-  align-items: center;
-}
-#detectorA{
-  background-image: url(../Pagina/Imagenes/detectorU.jpg);
-  background-repeat: no-repeat;
-  background-size: cover;
-  align-items: center;
-}
-#nuevoUsuario{
-  background-color: #111521
-}
-#procesamiento{
-  background-image: url(../Pagina/Imagenes/procesador.jpg);
-  background-repeat: no-repeat;
-  background-size: cover;
-
-}
-#procesamientoA{
-  background-image: url(../Pagina/Imagenes/procesador.jpg);
-  background-repeat: no-repeat;
-  background-size: cover;
-
-}
-#modificarU{
-  background-image: url(../Pagina/Imagenes/modificarUsuario.jpg);
-  background-repeat: no-repeat;
-  background-size: cover;
-
-}
-#modificarUF{
-  background-image: url(../Pagina/Imagenes/modificarF.jpg);
-  background-repeat: no-repeat;
-  background-size: cover;
-
-}
 .nombreIn{
   display: flex;
   flex-direction: column;
@@ -630,11 +715,11 @@ input[type="text"] {
 }
 
 .contenedor-botones2 {
-width: 100%;
 display: grid;
 grid-template-columns: repeat(2, 1fr);
-gap: 40px;
+margin-top: 7rem;
 }
+
 .contenedor-botones3 {
 width: 100%;
 display: grid;
@@ -719,100 +804,6 @@ gap: 40px;
   left: 45%;
 }
 .Botones:hover{
-  background:rgb(108, 20, 224);
-}
-/****************************************ESTILOS DE BOTON ACEPTAR 2****************************************/
-.BotonAceptar{
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30%;
-  height: 40px;
-  background:#6a7182;
-  color: beige;
-  font-family: TodoN;
-  font-size: 20px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  text-transform: uppercase;
-  transition: .3s ease all;
-  margin-left: 30%;
-}
-.BotonAceptar span{
-  transition: .5s ease-in-out all;
-  position: absolute;
-  left: 19%;
-}
-.BotonAceptar .IAceptar{
-  display: flex;
-  align-items: center;
-  position: absolute;
-  z-index: 2;
-  left: 20%;
-  transition: .5s ease-in-out all;
-  opacity: 0;
-}
-.BotonAceptar svg{
-  color: beige;
-  width: 25px;
-  height: 25px;
-}
-.BotonAceptar:hover .IAceptar{
-  left: 26%;
-  opacity: 1;
-}
-.BotonAceptar:hover span{
-  left: 16%;
-}
-.BotonAceptar:hover{
-  background:rgb(108, 20, 224);
-}
-/****************************************ESTILOS DE BOTON CANCELAR 2****************************************/
-.BotonCancelar{
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30%;
-  height: 40px;
-  background: #6a7182;
-  color: beige;
-  font-family: TodoN;
-  font-size: 20px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  text-transform: uppercase;
-  transition: .3s ease all;
-  margin-left: 30%;
-}
-.BotonCancelar span{
-  transition: .5s ease-in-out all;
-  position: absolute;
-  right: 23.5%;
-}
-.BotonCancelar .ICancelar{
-  display: flex;
-  align-items: center;
-  position: absolute;
-  z-index: 2;
-  right: 23.5%;
-  transition: .5s ease-in-out all;
-  opacity: 0;
-}
-.BotonCancelar svg{
-  color: beige;
-  width: 25px;
-  height: 25px;
-}
-.BotonCancelar:hover .ICancelar{
-  right: 21%;
-  opacity: 1;
-}
-.BotonCancelar:hover span{
-  right: 26%;
-}
-.BotonCancelar:hover{
   background:rgb(108, 20, 224);
 }
 /****************************************ESTILOS DE BOTONES 3****************************************/
@@ -1287,3 +1278,610 @@ gap: 40px;
   color: #7f8c8d;
   font-size: 14px;
 }
+
+.areaDescargar{
+  margin-top: 20%;
+  margin-left: 34%;
+  width: 400px;
+}
+
+.buttondescargar {
+  --width: 250px;
+  --height: 35px;
+  --tooltip-height: 35px;
+  --tooltip-width: 200px;
+  --gap-between-tooltip-to-button: 18px;
+  --button-color: #bebecc;
+  --tooltip-color: #bebecc;
+  width: var(--width);
+  height: var(--height);
+  background: var(--button-color);
+  position: relative;
+  text-align: center;
+  border-radius: 0.45em;
+  font-family: "TODOC";
+  transition: background 0.3s;
+}
+
+.buttondescargar::before {
+  position: absolute;
+  content: attr(data-tooltip);
+  width: var(--tooltip-width);
+  height: var(--tooltip-height);
+  background-color: var(--tooltip-color);
+  font-size: 0.9rem;
+  color: #111010;
+  border-radius: .25em;
+  line-height: var(--tooltip-height);
+  bottom: calc(var(--height) + var(--gap-between-tooltip-to-button) + 10px);
+  left: calc(50% - var(--tooltip-width) / 2);
+}
+
+.buttondescargar::after {
+  position: absolute;
+  content: '';
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  border-top-color: var(--tooltip-color);
+  left: calc(50% - 10px);
+  bottom: calc(100% + var(--gap-between-tooltip-to-button) - 10px);
+}
+
+.buttondescargar::after,.buttondescargar::before {
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.5s;
+}
+
+.textdescargar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.button-wrapperdescargar,.textdescargar,.icondescargar {
+  overflow: hidden;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  color: #111521;
+}
+
+.textdescargar {
+  top: 0
+}
+
+.textdescargar,.icondescargar {
+  transition: top 0.5s;
+}
+
+.icondescargar {
+  color: #e8eaed;
+  top: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icondescargar svg {
+  width: 24px;
+  height: 24px;
+}
+
+.buttondescargar:hover {
+  background: #6a7182;
+}
+
+.buttondescargar:hover .textdescargar {
+  top: -100%;
+}
+
+.buttondescargar:hover .icondescargar {
+  top: 0;
+}
+
+.buttondescargar:hover:before,.buttondescargar:hover:after {
+  opacity: 1;
+  visibility: visible;
+}
+
+.buttondescargar:hover:after {
+  bottom: calc(var(--height) + var(--gap-between-tooltip-to-button) - 20px);
+}
+
+.buttondescargar:hover:before {
+  bottom: calc(var(--height) + var(--gap-between-tooltip-to-button));
+}
+
+/****************************CONFIGURACIÓN DE NUEVO USUARIO ADMINISTRADOR ************************/
+.FormNuevoUsuarioA {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 0.3rem;
+}
+
+.modeNuevoUsuarioA + .containerNuevoUsuarioA {
+  --color-pure: #000;
+  --color-primary: #e8eaed;
+  --color-secondary: #111521;
+  --muted: #6a7182;
+}
+.modeNuevoUsuarioA:checked + .containerNuevoUsuarioA {
+  --color-pure: #fff;
+  --color-primary: #212121;
+  --color-secondary: #bbbbbc;
+  --muted: #383838;
+}
+.containerNuevoUsuarioA {
+  background-color: var(--color-secondary);
+  position: absolute;
+  width: 300px;
+  height: 65px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  margin-bottom: 0.5rem;
+  margin-left: 32rem;
+}
+
+.wrapNuevoUsuarioA {
+  --round: 10px;
+  --p-x: 8px;
+  --p-y: 4px;
+  --w-label: 160px;
+  display: flex;
+  align-items: center;
+  padding: var(--p-y) var(--p-x);
+  position: relative;
+  background: var(--color-primary);
+  border-radius: var(--round);
+  max-width: 500px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  top: 0;
+  z-index: 1;
+}
+
+.wrapNuevoUsuarioA input {
+  height: 0;
+  width: 0;
+  position: absolute;
+  overflow: hidden;
+  display: none;
+  visibility: hidden;
+}
+
+.labelNuevoUsuarioA {
+  cursor: pointer;
+  outline: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: 'TODOC';
+  color: var(--color-secondary);
+  background: transparent;
+  padding: 12px 16px;
+  width: var(--w-label);
+  min-width: var(--w-label);
+  text-decoration: none;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: color 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+}
+.labelNuevoUsuarioA span {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.labelSeleccionador{
+  align-items: center;
+  font-family: TodoN;
+  font-size: 25px;
+  color: #e8eaed
+}
+.wrapNuevoUsuarioA input[class*="rd-"]:checked + .labelNuevoUsuarioA {
+  color: var(--color-pure);
+}
+
+.barNuevoUsuarioA {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  height: 100%;
+  width: var(--w-label);
+  z-index: 0;
+  transition: transform 0.5s cubic-bezier(0.33, 0.83, 0.99, 0.98);
+}
+.barNuevoUsuarioA::before,
+.barNuevoUsuarioA::after {
+  content: "";
+  position: absolute;
+  height: 4px;
+  width: 100%;
+  background: var(--color-secondary);
+}
+.barNuevoUsuarioA::before {
+  top: 0;
+  border-radius: 0 0 9999px 9999px;
+}
+.barNuevoUsuarioA::after {
+  bottom: 0;
+  border-radius: 9999px 9999px 0 0;
+}
+
+.slidebarNuevoUsuarioA {
+  position: absolute;
+  height: calc(100% - (var(--p-y) * 4));
+  width: var(--w-label);
+  border-radius: calc(var(--round) - var(--p-y));
+  background: var(--muted);
+  z-index: 0;
+  transition: transform 0.5s cubic-bezier(0.33, 0.83, 0.99, 0.98);
+}
+
+.rd-admin:checked ~ .barNuevoUsuarioA,
+.rd-admin:checked ~ .slidebarNuevoUsuarioA,
+.rd-admin + label:hover ~ .slidebarNuevoUsuarioA {
+  transform: translateX(0) scaleX(1);
+}
+.rd-tester:checked ~ .barNuevoUsuarioA,
+.rd-tester:checked ~ .slidebarNuevoUsuarioA,
+.rd-tester + .labelNuevoUsuarioA:hover ~ .slidebarNuevoUsuarioA {
+  transform: translateX(100%) scaleX(1);
+}
+/**********************************ESTILOS DE BOTONES AGREGAR Y CANCELAR ****************************/
+.botonRegistrar {
+  font-family: 'TODOC';
+  font-size: 20px;
+  background: #e8eaed;
+  color: #111521;
+  fill: rgb(155, 153, 153);
+  padding: 0.7em 1em;
+  padding-left: 0.9em;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  border: none;
+  border-radius: 15px;
+  font-weight: 1000;
+  width: 23%;
+  height: 50px;
+  margin-left: 50%;
+}
+
+.botonRegistrar .spanRegistrar{
+  display: block;
+  margin-left: 0.3em;
+  transition: all 0.3s ease-in-out;
+}
+
+.botonRegistrar .svgRegistrar {
+  display: block;
+  transform-origin: center center;
+  transition: transform 0.3s ease-in-out;
+}
+
+.botonRegistrar:hover {
+  background: #6a7182;
+}
+
+.botonRegistrar:hover .svg-wrapperRegistrar {
+  transform: scale(1.25);
+  transition: 0.5s linear;
+}
+
+.botonRegistrar:hover .svgRegistrar {
+  transform: translateX(2.05em) scale(1.6);
+  fill: #fff;
+}
+
+.botonRegistrar:hover .spanRegistrar {
+  opacity: 0;
+  transition: 0.5s linear;
+}
+
+.botonRegistrar:active {
+  transform: scale(0.95);
+}
+
+.BotonCancelar{
+  font-family: 'TODOC';
+  font-size: 20px;
+  background: #e8eaed;
+  color: #111521;
+  fill: rgb(155, 153, 153);
+  padding: 0.7em 1em;
+  padding-left: 0.9em;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  border: none;
+  border-radius: 15px;
+  font-weight: 1000;
+  width: 23%;
+  height: 50px;
+  margin-left: 25%;
+}
+
+.BotonCancelar .spanCancelar {
+  display: block;
+  margin-left: 0.3em;
+  transition: all 0.3s ease-in-out;
+}
+
+.BotonCancelar  .svgCancelar {
+  display: block;
+  transform-origin: center center;
+  transition: transform 0.3s ease-in-out;
+}
+
+.BotonCancelar:hover {
+  background: #6a7182;
+}
+
+.BotonCancelar:hover .svg-wrapperCancelar {
+  transform: scale(1.25);
+  transition: 0.5s linear;
+}
+
+.BotonCancelar:hover .svgCancelar{
+  transform: translateX(2.05em) scale(1.4);
+  fill: #fff;
+}
+
+.BotonCancelar:hover .spanCancelar{
+  opacity: 0;
+  transition: 0.5s linear;
+}
+
+.BotonCancelar:active {
+  transform: scale(0.95);
+}
+/****************************************BOTON EXPERIMENTADOR****************************************/
+
+.experimentador{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  }
+
+.buttonExperimentar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #bbbbbc;
+  border: none;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.164);
+  cursor: pointer;
+  transition-duration: .3s;
+  overflow: hidden;
+  position: relative;
+}
+
+.svgIconExperimentar {
+  width: 12px;
+  transition-duration: .3s;
+  transform: scale(2.8)
+}
+
+.svgIconExperimentar path {
+  fill: white;
+}
+
+.buttonExperimentar:hover {
+  width: 180px;
+  height: 80px;
+  border-radius: 50px;
+  transition-duration: .3s;
+  background-color: #6a7182;
+  align-items: center;
+}
+
+.buttonExperimentar:hover .svgIconExperimentar {
+  width: 80px;
+  transition-duration: .3s;
+  transform: translateY(50%);
+}
+
+.buttonExperimentar::before {
+  position: absolute;
+  top: -19px;
+  content: "Experimentar";
+  color: white;
+  transition-duration: .3s;
+  font-size: 8px;
+  font-family: 'TODOC';
+}
+
+.buttonExperimentar:hover::before {
+  font-size: 20px;
+  opacity: 1;
+  transform: translateY(30px);
+  transition-duration: .3s;
+}
+/*BOTON EVALUADOR*/
+
+.buttonEvaluar {
+  width: 55px;
+  height: 55px;
+  border-radius: 30%;
+  background-color: #bbbbbc;
+  border: none;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.164);
+  cursor: pointer;
+  transition-duration: .3s;
+  overflow: hidden;
+  position: relative;
+  margin-top: 20px;
+}
+
+.svgIconEvaluar {
+  width: 40px;
+  transition-duration: .3s;
+}
+
+.svgIconEvaluar .pathEvaluar {
+  fill: white;
+}
+
+.buttonEvaluar:hover {
+  width: 140px;
+  border-radius: 50px;
+  transition-duration: .3s;
+  background-color: #6a7182;
+  align-items: center;
+}
+
+.buttonEvaluar:hover .svgIconEvaluar {
+  width: 80px;
+  transition-duration: .3s;
+  transform: translateY(50%);
+}
+
+.buttonEvaluar::before {
+  position: absolute;
+  top: -25px;
+  content: "Evaluar";
+  color: white;
+  transition-duration: .3s;
+  font-size: 12px;
+}
+
+.buttonEvaluar:hover::before {
+  font-size: 20px;
+  opacity: 1;
+  transform: translateY(30px);
+  transition-duration: .3s;
+}
+/*RECUPERAR*/
+.contenedor-botones2Rec {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  margin-top: 30px;
+  width: 100%;
+  }
+  .botonRecuperar {
+    font-family: 'TODOC';
+    font-size: 20px;
+    background: #e8eaed;
+    color: #111521;
+    fill: rgb(155, 153, 153);
+    padding: 0.7em 1em;
+    padding-left: 0.9em;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    border: none;
+    border-radius: 15px;
+    font-weight: 1000;
+    width: 90%;
+    height: 50px;
+  }
+  
+  .botonRecuperar .spanRecuperar{
+    display: block;
+    margin-left: 0.3em;
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .botonRecuperar .svgRecuperar {
+    display: block;
+    transform-origin: center center;
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .botonRecuperar:hover {
+    background: #6a7182;
+  }
+  
+  .botonRecuperar:hover .svg-wrapperRecuperar {
+    transform: scale(1.25);
+    transition: 0.5s linear;
+  }
+  
+  .botonRecuperar:hover .svgRecuperar {
+    transform: translateX(2.05em) scale(1.6);
+    fill: #fff;
+  }
+  
+  .botonRecuperar:hover .spanRecuperar {
+    opacity: 0;
+    transition: 0.5s linear;
+  }
+  
+  .botonRecuperar:active {
+    transform: scale(0.95);
+  }
+  
+  .BotonCancelarRecuperar{
+    font-family: 'TODOC';
+    font-size: 20px;
+    background: #e8eaed;
+    color: #111521;
+    fill: rgb(155, 153, 153);
+    padding: 0.7em 1em;
+    padding-left: 0.9em;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    border: none;
+    border-radius: 15px;
+    font-weight: 1000;
+    width: 98%;
+    height: 50px;
+  }
+  
+  .BotonCancelarRecuperar .spanCancelarRecuperar {
+    display: block;
+    margin-left: 0.3em;
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .BotonCancelarRecuperar  .svgCancelarRecuperar {
+    display: block;
+    transform-origin: center center;
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .BotonCancelarRecuperar:hover {
+    background: #6a7182;
+  }
+  
+  .BotonCancelarRecuperar:hover .svg-wrapperCancelarRecuperar {
+    transform: scale(1.25);
+    transition: 0.5s linear;
+  }
+  
+  .BotonCancelarRecuperar:hover .svgCancelarRecuperar{
+    transform: translateX(2.05em) scale(1.4);
+    fill: #fff;
+  }
+  
+  .BotonCancelarRecuperar:hover .spanCancelarRecuperar{
+    opacity: 0;
+    transition: 0.5s linear;
+  }
+  
+  .BotonCancelarRecuperar:active {
+    transform: scale(0.95);
+  }
