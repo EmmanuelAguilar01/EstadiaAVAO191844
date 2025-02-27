@@ -4,9 +4,9 @@ import argparse
 
 def ejecutar_detect(weights, img_size, conf_thres, iou_thres, source, guardado):
     """
-    Ejecuta el archivo detect.py con los parámetros proporcionados.
+    Ejecuta el archivo detect.py con los hiperparámetros.
 
-    Args:
+    Argumentos:
         weights (str): Ruta al archivo .pt con los pesos entrenados.
         img_size (int): Tamaño de la imagen para la inferencia.
         conf_thres (float): Umbral de confianza para las detecciones.

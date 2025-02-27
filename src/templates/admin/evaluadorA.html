@@ -1,5 +1,5 @@
 {% extends 'baseAdmin.html' %}
-{% block Titulo %}Entrenamiento{% endblock %}
+{% block Titulo %}Evaluador{% endblock %}
 {% block Cuerpo %}
 <h1 id="Cab">Evaluador Administrador</h1>
 <form action="/evaluarA" method="POST">
@@ -120,8 +120,600 @@
         </svg>
         </button>
 </div>
+
 </form>
+<div id="processingModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="loader-containerEval">
+            <div class="loader">
+                <div class="cubes">
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                    <div class="cube">
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                        <div class="side"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+                <h3 id="processingMessage">Evaluando...</h3>
+                <p id="processingDetails">Esto puede tomar tiempo. Por favor, espere...</p>
+        <p id="currentStatus"></p>
+    </div>
+</div>
+
 <footer id="Pie">
 Estadia - Aguilar Vargas Antonio Emmanuel - AVAO191844
 </footer>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.querySelector('form');
+        const modal = document.getElementById('processingModal');
+        const processingMessage = document.getElementById('processingMessage');
+    
+        form.addEventListener("submit", function (event) {
+            event.preventDefault();
+    
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
+    
+            const formData = new FormData(this);
+    
+            fetch('/evaluarA', {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.task_id) {
+                    checkTaskStatus(data.task_id);
+                } else {
+                    closeModal();
+                    alert("Error en la evaluación");
+                }
+            });
+        });
+    
+        function checkTaskStatus(taskId) {
+            const interval = setInterval(() => {
+                fetch(`/check_task_statusEval/${taskId}`)
+                .then(response => response.json())
+                .then(data => {
+                    processingMessage.textContent = data.mensaje;  // Actualiza el mensaje en la ventana emergente
+
+                    if (data.status === "completed") {
+                        clearInterval(interval);  // Detiene la consulta
+                        processingMessage.textContent = "¡Proceso concluido! Redirigiendo...";
+
+                        setTimeout(() => {
+                            window.location.href = data.redirect_url;  // Redirige a la URL recibida
+                        }, 3000);  // Espera 2 segundos antes de redirigir
+                    }
+
+                    if (data.status === "error") {
+                        clearInterval(interval);
+                        closeModal();
+                        alert("Hubo un error.");
+                    }
+                });
+            }, 8000); // Consulta cada 5 segundos
+        }
+
+    
+        function closeModal() {
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = "none";
+            }, 300);
+        }
+    });
+    </script>
 {% endblock %}

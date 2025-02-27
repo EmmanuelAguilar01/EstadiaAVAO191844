@@ -4,6 +4,7 @@ import os
 import json
 import subprocess
 import threading
+import uuid
 import pymysql
 import torch
 import cv2
@@ -138,7 +139,7 @@ def serve_file(filename):
 # Configuración del módulo para agregar un nuevo usuario sin ininicar sesión
 
 
-@ app.route('/agregarNuevo', methods=['POST'])
+@app.route('/agregarNuevo', methods=['POST'])
 def agregarNuevo():
     # Se captan los datos de los diferentes elementos del formulario
     if request.method == 'POST':
@@ -209,6 +210,7 @@ def EjecExperimentador():
     idDataset = request.form.get('idDataset')
     name = request.form.get('name')
     Usuario = current_user.id
+    tipoUsuario = current_user.tipo
     ruta = str(Path(dataExperimentador))
 
     print(f"Tecnología: {tecnologia}, Épocas: {epocas}, Batch size: {batch_size}, Threshold: {threshold}, IOU threshold: {iou_threshold},Ruta: {ruta}, data5: {valorTech}, Nombre: {name},ID dataset:{idDataset},idUsuario: {Usuario}")
@@ -221,29 +223,83 @@ def EjecExperimentador():
 
         if not all([imgsz]):
             flash('Faltan valores requeridos para YOLO')
-            return redirect(url_for('experimentadorA'))
+            if tipoUsuario == "Tester":
+                return redirect(url_for('experimentadorT'))
+            if tipoUsuario == "Administrador":
+                return redirect(url_for('experimentadorA'))
+
+        task_id = f"yolo_{Usuario}_{int(time.time())}"
+
+        # Guarda la información de la tarea
+        if not hasattr(app, 'task_status'):
+            app.task_status = {}
+
+        app.task_status[task_id] = {
+            "status": "running",
+            "mensaje": "Entrenando YoloV5",
+            "tipoUsuario": tipoUsuario,
+            "completado": False
+        }
+
+        # Función wrapper para actualizar el estado al finalizar
+        def run_yolo():
+            try:
+                YOLO(epocas, batch_size, threshold, iou_threshold,
+                     imgsz, ruta, name, idDataset, Usuario, tipoUsuario)
+            finally:
+                app.task_status[task_id]["completado"] = True
 
         # Inicia el hilo para entrenar YOLO
-        thread = threading.Thread(target=YOLO, args=(
-            epocas, batch_size, threshold, iou_threshold, imgsz, ruta, name, idDataset, Usuario))
-        mensaje = "Entrenando YoloV5"
+        thread = threading.Thread(target=run_yolo)
+        thread.daemon = True
+        thread.start()
+
+        return jsonify({
+            'mensaje': "Entrenando YoloV5",
+            'task_id': task_id
+        })
 
     elif tecnologia == "TRANS" and valorTech == "Transformer":
+
+        # Genera un ID único para esta tarea
+        task_id = f"transformer_{Usuario}_{int(time.time())}"
+
+        # Guarda la información de la tarea
+        if not hasattr(app, 'task_status'):
+            app.task_status = {}
+
+        app.task_status[task_id] = {
+            "status": "running",
+            "mensaje": "Entrenando Transformer",
+            "tipoUsuario": tipoUsuario,
+            "completado": False
+        }
+
+        # Función wrapper para actualizar el estado al finalizar
+        def run_transformer():
+            try:
+                Transformers(epocas, batch_size, threshold, iou_threshold,
+                             ruta, name, idDataset, Usuario, tipoUsuario)
+            finally:
+                app.task_status[task_id]["completado"] = True
+
         # Inicia el hilo para entrenar TRANSFORMER
-        thread = threading.Thread(target=Transformers, args=(
-            epocas, batch_size, threshold, iou_threshold, ruta, name, idDataset, Usuario))
-        mensaje = "Entrenando Transformer"
+        thread = threading.Thread(target=run_transformer)
+        thread.daemon = True
+        thread.start()
+
+        return jsonify({
+            'mensaje': "Entrenando Transformer",
+            'task_id': task_id
+        })
 
     else:
-        flash('La tecnología seleccionada no coincide con la tecnología del dataset.')
-        return redirect(url_for('experimentadorA'))
-
-    # Inicia el hilo de entrenamiento y envía la respuesta
-    thread.start()
-    return jsonify({'mensaje': mensaje})
+        return jsonify({
+            'error': 'La tecnología seleccionada no coincide con la tecnología del dataset.'
+        }), 400
 
 
-def YOLO(epocas, batch_size, threshold, iou_threshold, imgsz, ruta, name, idDataset, Usuario):
+def YOLO(epocas, batch_size, threshold, iou_threshold, imgsz, ruta, name, idDataset, Usuario, tipoUsuario):
     env = os.environ.copy()
     env['CONF_THRES'] = str(threshold)
     env['IOU_THRES'] = str(iou_threshold)
@@ -251,7 +307,7 @@ def YOLO(epocas, batch_size, threshold, iou_threshold, imgsz, ruta, name, idData
     arquitecturaModelo = "YOLOV5"
 
     print(
-        f"Iniciando YOLO con los siguientes parámetros: Epocas:{epocas}, BS:{batch_size}, IMG:{imgsz}, RutaDataset:{ruta}, Nombre:{name},ID_Usuario:{Usuario},IDDAtaset:{idDataset},Confianza:{threshold},Interseccón:{iou_threshold},Arquitectura:{arquitecturaModelo}")
+        f"Iniciando YOLO con los siguientes parámetros: Epocas:{epocas}, BS:{batch_size}, IMG:{imgsz}, RutaDataset:{ruta}, Nombre:{name},ID_Usuario:{Usuario},IDDAtaset:{idDataset},Confianza:{threshold},Interseccón:{iou_threshold},Arquitectura:{arquitecturaModelo},TipoUsuario:{tipoUsuario}")
 
     subprocess.run([r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\Sistema\Scripts\python.exe',
                     r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Models\YoloV5\YOLOV5.py',
@@ -281,20 +337,29 @@ def YOLO(epocas, batch_size, threshold, iou_threshold, imgsz, ruta, name, idData
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """, (Usuario, idDataset, name, arquitecturaModelo, errorExperimento, precisionExperimento, tiempoEjecutado, direccionCompleta))
                 db_connection.commit()
+
+                cursor.execute("SELECT nombre, correo FROM usuarios")
+                usuarios = cursor.fetchall()
+
+                for usuario in usuarios:
+                    nombre_usuario = usuario[0]
+                    email_usuario = usuario[1]
+                    notificar_nuevo_modelo(
+                        email_usuario, nombre_usuario, name, precisionExperimento, arquitecturaModelo)
+
         finally:
             db_connection.close()
     else:
         print("El archivo metricas.json no existe.")
 
     flash('Entrenamiento de YOLO ha finalizado y resultados guardados.')
-    return redirect(url_for('experimentadorA'))
 
 
-def Transformers(epocas, batch_size, threshold, iou_threshold, ruta, name, idDataset, Usuario):
+def Transformers(epocas, batch_size, threshold, iou_threshold, ruta, name, idDataset, Usuario, tipoUsuario):
     arquitecturaModelo = "Transformer"
 
     print(
-        f"Iniciando DETR con los siguientes parámetros: Epocas:{epocas}, BS:{batch_size}, RutaDataset:{ruta}, Nombre:{name},ID_Usuario:{Usuario},IDDAtaset:{idDataset},Confianza:{threshold},Interseccón:{iou_threshold},Arquitectura:{arquitecturaModelo}")
+        f"Iniciando DETR con los siguientes parámetros: Epocas:{epocas}, BS:{batch_size}, RutaDataset:{ruta}, Nombre:{name},ID_Usuario:{Usuario},IDDAtaset:{idDataset},Confianza:{threshold},Interseccón:{iou_threshold},Arquitectura:{arquitecturaModelo},TipoUsuario:{tipoUsuario}")
 
     subprocess.run([r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\Sistema\Scripts\python.exe',
                     r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Models\Transformers\Transformer.py',
@@ -321,39 +386,115 @@ def Transformers(epocas, batch_size, threshold, iou_threshold, ruta, name, idDat
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """, (Usuario, idDataset, name, arquitecturaModelo, errorExperimento, precisionExperimento, tiempoEjecutado, direccionCompleta))
                 db_connection.commit()
+
+                cursor.execute("SELECT nombre, correo FROM usuarios")
+                usuarios = cursor.fetchall()
+
+                for usuario in usuarios:
+                    nombre_usuario = usuario[0]
+                    email_usuario = usuario[1]
+                    notificar_nuevo_modelo(
+                        email_usuario, nombre_usuario, name, precisionExperimento, arquitecturaModelo)
+
         finally:
             db_connection.close()
     else:
         print("El archivo metricas.json no existe.")
 
     flash('Entrenamiento de Transformers finalizado y resultados guardados.')
-    return redirect(url_for('experimentadorA'))
 
 
-@ app.route('/buscar_correo', methods=['POST'])
+@app.route('/check_task_status/<task_id>', methods=['GET'])
+def check_task_status(task_id):
+    if not hasattr(app, 'task_status') or task_id not in app.task_status:
+        return jsonify({'status': 'unknown'})
+
+    task = app.task_status[task_id]
+
+    if task["completado"]:
+        # Determinar la URL de redirección
+        if task["tipoUsuario"] == "Tester":
+            redirect_url = url_for('experimentadorT')
+        else:
+            redirect_url = url_for('experimentadorA')
+
+        # Limpiar la tarea después de devolverla
+        # del app.task_status[task_id]  # Comentado para que se pueda verificar múltiples veces
+
+        return jsonify({
+            'status': 'completed',
+            'redirect_url': redirect_url
+        })
+
+    return jsonify({
+        'status': 'running',
+        'mensaje': task["mensaje"]
+    })
+
+
+@app.route('/check_task_statusEval/<task_id>', methods=['GET'])
+def check_task_statusEval(task_id):
+    if not hasattr(app, 'task_status') or task_id not in app.task_status:
+        return jsonify({'status': 'unknown'})
+
+    task = app.task_status[task_id]
+
+    if task["completado"]:  # Cuando la tarea finaliza
+        return jsonify({
+            "status": "completed",
+            "mensaje": "Evaluación concluida exitosamente.",
+            "redirect_url": url_for('resultadosA')  # Redirige a resultadosA
+        })
+
+    return jsonify({
+        'status': 'running',
+        'mensaje': task["mensaje"]
+    })
+
+################################################################################################################################################ SECCIÓN PARA ENVIO DE CORREO######################################## ###########################################################################################################
+
+# Ruta que se ejecuta al momento de llamar en el formulario de la vista "nuevaContra.html" para buscar el correo y enviar el enlace de recuperación de contraseña
+
+
+@app.route('/buscar_correo', methods=['POST'])
 def buscar_correo():
+    # Se obtiene el correo del formulario
     if request.method == 'POST':
         correo = request.form['correo']
+        # Se crea el cursor para la conexión a la base de datos
         cursor = BaseDatos.connection.cursor()
+        # Se crea la sentencia SQL para buscar el correo en la base de datos
         sql = "SELECT idUsuarios FROM usuarios WHERE correo = %s"
+        # Se ejecuta la sentencia SQL con el cursor
         cursor.execute(sql, (correo,))
+        # Se hace el envío de los datos
         BaseDatos.connection.commit()
+        # Se obtiene el resultado de la sentencia SQL
         resultado = cursor.fetchone()
+        # Se cierra el cursor
         cursor.close()
 
+        # Se verifica si el correo existe en la base de datos
         if resultado:
+            # Se crea el token para la recuperación de contraseña el cual se configura para expirar en 24 horas
             id_usuario = resultado[0]
             Token_Contra = create_access_token(
                 identity=id_usuario, expires_delta=timedelta(hours=24))
+            # Se envía el correo con el enlace de recuperación por medio del método "enviar_correo_recuperacion"
             enviar_correo_recuperacion(correo, Token_Contra)
+            # Se envía un mensaje de éxito y se redirige a la vista de recuperación
             flash('Se ha enviado el enlace para recuperar tu contraseña al correo.')
             return redirect(url_for('recuperacion'))
         else:
+            # En caso de que el correo no exista en la base de datos se envía un mensaje de error y se redirige a la vista de recuperación
             flash('El correo electrónico no esta registrado')
             return redirect(url_for('recuperacion'))
 
+# Configurar el método para enviar el correo electrónico con el enlace de recuperación de contraseña
+
 
 def enviar_correo_recuperacion(correo, Token_Contra):
+    # Se configura el mensaje del correo el cual contiene el asunto, el remitente, el destinatario y el enlace de recuperación
     mensaje = Message(
         subject='Recuperar contraseña',
         sender='Estadia-AVAO191844<r-emmanuel_n@hotmail.com>',
@@ -361,22 +502,27 @@ def enviar_correo_recuperacion(correo, Token_Contra):
         html=f'Haz clic en el siguiente enlace para restablecer tu contraseña:{url_for("nuevaContra", Token_Contra=Token_Contra, _external=True)}'
     )
     try:
+        # Se envía el correo
         Correo.send(mensaje)
+        # Se imprime un mensaje de éxito en la consola
         print(f'Correo enviado a {correo}')
+    # En caso de que ocurra un error al enviar el correo se imprime un mensaje de error en la consola
     except Exception as e:
         print(f'Error al enviar el correo: {e}')
-        raise  # Para obtener más detalles sobre el error
+        raise  # Se lanza una excepción
+
+# Configuración de la ruta para la nueva contraseña
 
 
 @app.route('/nuevaContra/<Token_Contra>', methods=['GET', 'POST'])
 def nuevaContra(Token_Contra):
     try:
-        # Verifica el token y extrae el ID del usuario
+        # Se verifica el token y extrae el ID del usuario
         token_data = decode_token(Token_Contra)
         id_usuario = token_data['sub']
 
         if request.method == 'POST':
-            # Obtén la nueva contraseña del formulario
+            # Se obtiene la nueva contraseña del formulario
             nueva_contra = request.form['nuevac']
             confirmar_contra = request.form['confirmar_nuevac']
 
@@ -384,7 +530,7 @@ def nuevaContra(Token_Contra):
                 flash('Por favor, rellena todos los campos')
                 return redirect(url_for('nuevaContra', Token_Contra=Token_Contra))
 
-            # Verifica si ambas contraseñas coinciden
+            # Se verifica si ambas contraseñas coinciden
             if nueva_contra == confirmar_contra:
                 # Genera el hash de la nueva contraseña
                 nueva_contraHS = generate_password_hash(nueva_contra)
@@ -406,8 +552,10 @@ def nuevaContra(Token_Contra):
         # Muestra el formulario
         return render_template('nuevaContra.html', Token_Contra=Token_Contra)
 
+    # En caso de que el token haya expirado se menciona en un mensaje y se redirige a la vista de recuperación
     except ExpiredSignatureError:
         return 'Error: Token ha expirado, solicita uno nuevo'
+    # En caso de que ocurra un error inesperado se menciona en un mensaje y se redirige a la vista de recuperación
     except InvalidTokenError:
         return 'Error: Token inválido, solicita uno nuevo'
     except Exception as e:
@@ -424,8 +572,22 @@ def enviar_correo_notificacion(email_usuario, nombre_usuario, modificaciones):
 
     Correo.send(msg)
 
-############################################################################################################
-##################################### CONFIGURACIÓN ADMINISTRADOR ##########################################
+
+def notificar_nuevo_modelo(email_usuario, nombre_usuario, nombre_modelo, precision, modelo):
+    msg = Message('Nuevo Modelo Disponible - Sistema de Detección de Basura',
+                  sender='Estadia-AVAO191844<r-emmanuel_n@hotmail.com>',
+                  recipients=[email_usuario])
+
+    msg.body = f"""Hola {nombre_usuario},
+
+Se ha generado un nuevo modelo de {modelo} llamado {nombre_modelo}, con una Precisión de {precision} en el Sistema de Detección de Basura en Imágenes Estáticas.
+Accede al sistema para utilizarlo en tus proyectos de detección de basura.
+
+Tesis - AVAO191844"""
+
+    Correo.send(msg)
+###########################################################################################################
+##################################### CONFIGURACIÓN ADMINISTRADOR #########################################
 ############################################################################################################
 
 # Configuración de la ruta para acceso de Administrador, siendo asegurada por medio de la libreria de "Login_Required"
@@ -506,8 +668,8 @@ def reportesA():
     return render_template('admin/reportesA.html', evaluaciones=evaluaciones, datos_graficos=datos_graficos)
 
 
-@ app.route('/crudBasuraA')
-@ login_required
+@app.route('/crudBasuraA')
+@login_required
 def crudBasuraA():
     cursor = BaseDatos.connection.cursor()
     cursor.execute('SELECT * FROM tiposbasura')
@@ -516,7 +678,7 @@ def crudBasuraA():
     return render_template('admin/tiposBasuraA.html', basuras=basuras)
 
 
-@ app.route('/eliminarBasuraA/<string:tipoBasura>')
+@app.route('/eliminarBasuraA/<string:tipoBasura>')
 def eliminarBasuraA(tipoBasura):
     cursor = BaseDatos.connection.cursor()
     cursor.execute(
@@ -527,7 +689,7 @@ def eliminarBasuraA(tipoBasura):
     return redirect(url_for('crudBasuraA'))
 
 
-@ app.route('/editarBasuraA/<string:tipoBasura>')
+@app.route('/editarBasuraA/<string:tipoBasura>')
 def editarBasuraA(tipoBasura):
     cursor = BaseDatos.connection.cursor()
     sql = "SELECT * FROM tiposbasura WHERE tipoBasura = %s"
@@ -541,7 +703,7 @@ def editarBasuraA(tipoBasura):
                            afectaciones=afectaciones, tiempoDegradacion=tiempoDegradacion)
 
 
-@ app.route('/editarBasuraAdmin/<string:tipoBasura>', methods=['POST'])
+@app.route('/editarBasuraAdmin/<string:tipoBasura>', methods=['POST'])
 def editarBasuraAdmin(tipoBasura):
     if request.method == 'POST':
         tipoBasura = request.form['tipoBasura']
@@ -559,7 +721,7 @@ def editarBasuraAdmin(tipoBasura):
         return redirect(url_for('crudBasuraA'))
 
 
-@ app.route('/agregarNuevoA', methods=['POST'])
+@app.route('/agregarNuevoA', methods=['POST'])
 def agregarNuevoA():
     if request.method == 'POST':
         if not all(request.form.values()):
@@ -594,7 +756,7 @@ def agregarNuevoA():
         return redirect(url_for('nuevoUsuarioA'))
 
 
-@ app.route('/agregarBasura', methods=['POST'])
+@app.route('/agregarBasura', methods=['POST'])
 def agregarBasura():
     if request.method == 'POST':
         tipo = request.form['tipoBasura']
@@ -626,8 +788,8 @@ def agregarBasura():
         return redirect(url_for('crudBasuraA'))
 
 
-@ app.route('/crudUsuarioA')
-@ login_required
+@app.route('/crudUsuarioA')
+@login_required
 def crudUsuarioA():
     cursor = BaseDatos.connection.cursor()
     cursor.execute('SELECT * FROM usuarios')
@@ -636,7 +798,7 @@ def crudUsuarioA():
     return render_template('admin/crudUsuarioA.html', usuarios=usuarios)
 
 
-@ app.route('/eliminarA/<string:correo>')
+@app.route('/eliminarA/<string:correo>')
 def eliminarA(correo):
     cursor = BaseDatos.connection.cursor()
     cursor.execute(
@@ -647,7 +809,7 @@ def eliminarA(correo):
     return redirect(url_for('crudUsuarioA'))
 
 
-@ app.route('/editarA/<string:correo>')
+@app.route('/editarA/<string:correo>')
 def editarA(correo):
     cursor = BaseDatos.connection.cursor()
     sql = "SELECT * FROM usuarios WHERE Correo = %s"
@@ -666,7 +828,7 @@ def editarA(correo):
                            procedencia=procedencia)
 
 
-@ app.route('/editarUsuarioA/<string:correo>', methods=['POST'])
+@app.route('/editarUsuarioA/<string:correo>', methods=['POST'])
 def editarUsuarioA(correo):
     if request.method == 'POST':
         nombre = request.form['nombre']
@@ -817,8 +979,9 @@ def evaluadorA():
     return render_template('admin/evaluadorA.html', pesosY=pesosY, pesosT=pesosT, databasuras=databasuras)
 
 
-@app.route('/evaluarA', methods=['GET', 'POST'])
+@app.route('/evaluarA', methods=['POST'])
 def evaluarA():
+    tipoUsuario = current_user.tipo
     idDataset_seleccionado = request.form.get('datasetId')
     dataset_seleccionado = request.form.get('dataset')
     PesoYolo = request.form.get('PesoY')
@@ -826,29 +989,32 @@ def evaluarA():
     nombre_evaluacion = request.form.get('nombre_evaluacion')
 
     session['idDatasetPrueba'] = idDataset_seleccionado
+    session['nombre_evaluacion'] = nombre_evaluacion
 
-    if not nombre_evaluacion:
-        flash("Debes proporcionar un nombre para la evaluación.")
-        return redirect(url_for('evaluarA'))
-
-    # Verificar si se han seleccionado exactamente dos pesos
-    if not PesoYolo or not PesoDETR:
-        flash('Debes seleccionar exactamente dos pesos para evaluar.')
-        return redirect(url_for('evaluarA'))
-
-    # Verificar si se ha seleccionado un dataset
-    if not dataset_seleccionado:
-        flash("Debes seleccionar 1 dataset y 2 pesos para continuar.")
-        return redirect(url_for('evaluarA'))
+    if not nombre_evaluacion or not dataset_seleccionado or not PesoYolo or not PesoDETR:
+        if tipoUsuario == "Tester":
+            return jsonify({"error": "Todos los campos son obligatorios", "redirect": url_for('evaluadorT')})
+        if tipoUsuario == "Administrador":
+            return jsonify({"error": "Todos los campos son obligatorios", "redirect": url_for('evaluadorA')})
 
     print("Peso de YOLO: ", PesoYolo)
     print("Peso de DETR: ", PesoDETR)
 
+    # Crear identificador único para la tarea
+    task_id = str(uuid.uuid4())
+
+    if not hasattr(app, 'task_status'):
+        app.task_status = {}
+
+    app.task_status[task_id] = {
+        "status": "running",
+        "mensaje": "Iniciando evaluación...",
+        "completado": False,
+        "tipoUsuario": tipoUsuario
+    }
+
     directorio_base = os.path.join(
         "C:\\Users\\nayel\\Desktop\\Estadia - AVAO191844\\Sistema\\src\\Evaluaciones", nombre_evaluacion)
-
-    # Guardar en la sesión
-    session['nombre_evaluacion'] = nombre_evaluacion
 
     directorio_yolo = os.path.join(directorio_base, 'YOLO')
     os.makedirs(directorio_yolo, exist_ok=True)
@@ -859,74 +1025,90 @@ def evaluarA():
     session['directorio_yolo'] = os.path.join(directorio_yolo, 'exp')
     session['directorio_detr'] = directorio_detr
 
-    # Mostrar los valores seleccionados en el mensaje flash
     print(
         f"Los valores que escojiste son: Dataset: '{dataset_seleccionado}', \nPeso de YOLO: '{PesoYolo}', \nPeso DETR: '{PesoDETR}' \nY los directorios son: \n'{directorio_yolo}',\n'{directorio_detr}'")
 
-    try:
-        print("Iniciando evaluación de YOLO...")
-        inicio_yolo = time.time()
+    def ejecutarEvaluacion(task_id):
+        try:
+            app.task_status[task_id]["mensaje"] = "Evaluando con YOLO..."
+            print("Iniciando evaluación de YOLO...")
 
-        resultado_yolo = subprocess.run([r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\Sistema\Scripts\python.exe',
-                                         r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\EvaluarYOLO.py', "--weights", PesoYolo, "--source", dataset_seleccionado, "--guardado", directorio_yolo], shell=True, capture_output=True, text=True, check=True)
+            inicio_yolo = time.time()
 
-        tiempo_yolo_segundos = time.time() - inicio_yolo
-        horas_yolo, resto_segundos = divmod(int(tiempo_yolo_segundos), 3600)
-        minutos_yolo, segundos_yolo = divmod(resto_segundos, 60)
-        tiempo_yolo_formateado = f"{horas_yolo:02}:{minutos_yolo:02}:{segundos_yolo:02}"
+            resultado_yolo = subprocess.run([
+                r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\Sistema\Scripts\python.exe',
+                r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\EvaluarYOLO.py',
+                "--weights", PesoYolo, "--source", dataset_seleccionado, "--guardado", directorio_yolo
+            ], shell=True, capture_output=True, text=True, check=True)
 
-        if resultado_yolo.returncode == 0:
-            print("Evaluación de YOLO completada correctamente.")
-        else:
-            print("Error en la evaluación de YOLO:", resultado_yolo.stderr)
-            flash("Error al ejecutar YOLO.")
-            return redirect(url_for('evaluadorA'))
+            if resultado_yolo.returncode == 0:
+                app.task_status[task_id]["mensaje"] = "Evaluación de YOLO completada."
+                tiempo_yolo_segundos = time.time() - inicio_yolo
+                horas_yolo, resto_segundos = divmod(
+                    int(tiempo_yolo_segundos), 3600)
+                minutos_yolo, segundos_yolo = divmod(resto_segundos, 60)
+                tiempo_yolo_formateado = f"{horas_yolo:02}:{minutos_yolo:02}:{segundos_yolo:02}"
 
-        print("Iniciando evaluación de Transformers...")
-        inicio_detr = time.time()
+            else:
+                app.task_status[task_id]["mensaje"] = "Error al ejecutar YOLO."
+                raise Exception(resultado_yolo.stderr)
 
-        resultado_detr = subprocess.run([r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\Sistema\Scripts\python.exe',
-                                         r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\EvaluarDETR.py', "--weights", PesoDETR, "--source", dataset_seleccionado, "--guardado", directorio_detr], shell=True, capture_output=True, text=True, check=True)
+            app.task_status[task_id]["mensaje"] = "Evaluando con DETR..."
 
-        tiempo_detr_segundos = time.time() - inicio_detr
-        horas_detr, resto_segundos_detr = divmod(
-            int(tiempo_detr_segundos), 3600)
-        minutos_detr, segundos_detr = divmod(resto_segundos_detr, 60)
-        tiempo_detr_formateado = f"{horas_detr:02}:{minutos_detr:02}:{segundos_detr:02}"
+            inicio_detr = time.time()
 
-        if resultado_detr.returncode == 0:
-            print("Evaluación de DETR completada correctamente.")
-        else:
-            print("Error en la evaluación de DETR:", resultado_detr.stderr)
-            flash("Error al ejecutar DETR.")
-            return redirect(url_for('evaluadorA'))
+            resultado_detr = subprocess.run([
+                r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\Sistema\Scripts\python.exe',
+                r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\EvaluarDETR.py',
+                "--weights", PesoDETR, "--source", dataset_seleccionado, "--guardado", directorio_detr
+            ], shell=True, capture_output=True, text=True, check=True)
 
-        print("Llegó a la creación del archivo JSON")
-        datos_evaluacion = {
-            "nombre_evaluacion": nombre_evaluacion,
-            "tiempo_ejecucion_yolo": tiempo_yolo_formateado,
-            "tiempo_ejecucion_detr": tiempo_detr_formateado
-        }
+            if resultado_detr.returncode == 0:
+                app.task_status[task_id]["mensaje"] = "Evaluación de DETR completada."
+                tiempo_detr_segundos = time.time() - inicio_detr
+                horas_detr, resto_segundos_detr = divmod(
+                    int(tiempo_detr_segundos), 3600)
+                minutos_detr, segundos_detr = divmod(resto_segundos_detr, 60)
+                tiempo_detr_formateado = f"{horas_detr:02}:{minutos_detr:02}:{segundos_detr:02}"
 
-        ruta_json = os.path.join(directorio_base, "MetricasEvaluacion.json")
-        # Crear directorio si no existe
-        os.makedirs(directorio_base, exist_ok=True)
-        with open(ruta_json, 'w', encoding='utf-8') as archivo_json:
-            json.dump(datos_evaluacion, archivo_json,
-                      indent=4, ensure_ascii=False)
+            else:
+                app.task_status[task_id]["mensaje"] = "Error al ejecutar DETR."
+                raise Exception(resultado_detr.stderr)
 
-        print(f"Archivo JSON creado en: {ruta_json}")
+            app.task_status[task_id]["status"] = "completed"
+            app.task_status[task_id]["completado"] = True
 
-    except Exception as e:
-        print(f"Error en evaluarA: {str(e)}")
-        flash(f"Error: {str(e)}")
-        return redirect(url_for('evaluadorA'))
+        except Exception as e:
+            app.task_status[task_id]["mensaje"] = str(e)
+            app.task_status[task_id]["status"] = "error"
 
-    return redirect(url_for('resultadosA'))
+        finally:
+            datos_evaluacion = {
+                "nombre_evaluacion": nombre_evaluacion,
+                "tiempo_ejecucion_yolo": tiempo_yolo_formateado,
+                "tiempo_ejecucion_detr": tiempo_detr_formateado
+            }
+
+            ruta_json = os.path.join(
+                directorio_base, "MetricasEvaluacion.json")
+
+            # Crear directorio si no existe
+            os.makedirs(directorio_base, exist_ok=True)
+            with open(ruta_json, 'w', encoding='utf-8') as archivo_json:
+                json.dump(datos_evaluacion, archivo_json,
+                          indent=4, ensure_ascii=False)
+
+            print(f"Archivo JSON creado en: {ruta_json}")
+
+    hilo = threading.Thread(target=ejecutarEvaluacion, args=(task_id,))
+    hilo.start()
+
+    return jsonify({"task_id": task_id})
 
 
 @app.route('/resultadosA')
 def resultadosA():
+    tipoUsuario = current_user.tipo
     # Directorios de las imágenes
     yolo_dir = session.get('directorio_yolo')
     detr_dir = session.get('directorio_detr')
@@ -941,7 +1123,10 @@ def resultadosA():
 
     if not yolo_dir or not detr_dir:
         flash("No se encontraron directorios de resultados. Por favor, realiza una evaluación primero.")
-        return redirect(url_for('evaluarA'))
+        if tipoUsuario == "Tester":
+            return redirect(url_for('evaluadorT'))
+        if tipoUsuario == "Administrador":
+            return redirect(url_for('evaluadorA'))
 
     # Listar las imágenes de ambos directorios
     yolo_images = [os.path.join(yolo_relative_dir, img).replace(
@@ -952,12 +1137,19 @@ def resultadosA():
     yolo_images.sort()
     detr_images.sort()
 
+    session['num_imagenes_yolo'] = len(yolo_images)
+    session['num_imagenes_detr'] = len(detr_images)
+
     # Pasar las rutas de imágenes a la plantilla
-    return render_template('admin/resultados.html', yolo_images=yolo_images, detr_images=detr_images, zip=zip)
+    if tipoUsuario == "Tester":
+        return render_template('test/resultadosT.html', yolo_images=yolo_images, detr_images=detr_images, zip=zip)
+    if tipoUsuario == "Administrador":
+        return render_template('admin/resultados.html', yolo_images=yolo_images, detr_images=detr_images, zip=zip)
 
 
 @app.route('/GuardarEvaluacion', methods=['POST'])
 def GuardarEvaluacion():
+    tipoUsuario = current_user.tipo
     nombre_evaluacion = session.get('nombre_evaluacion')
     idPrueba = session.get('idDatasetPrueba')
 
@@ -966,162 +1158,248 @@ def GuardarEvaluacion():
 
     if not nombre_evaluacion:
         flash("No se encontró el nombre de la evaluación en la sesión.")
-        return redirect(url_for('evaluarA'))
+        if tipoUsuario == "Tester":
+            return redirect(url_for('evaluadorT'))
+        if tipoUsuario == "Administrador":
+            return redirect(url_for('evaluadorA'))
 
     try:
-        print(directorio_base)
         # Ruta del archivo JSON
         ruta_json = os.path.join(directorio_base, "MetricasEvaluacion.json")
+        datos_evaluacion = {}  # Inicializar por si no existe el JSON
 
         # Cargar el archivo JSON existente (si existe)
         if os.path.exists(ruta_json):
             with open(ruta_json, 'r', encoding='utf-8') as archivo_json:
                 datos_evaluacion = json.load(archivo_json)
 
-        tiempo_yolo = datos_evaluacion.get(
-            "tiempo_ejecucion_yolo", "Valor no encontrado")
-        tiempo_detr = datos_evaluacion.get(
-            "tiempo_ejecucion_detr", "Valor no encontrado")
+        num_imagenes_yolo = session.get('num_imagenes_yolo', 0)
+        num_imagenes_detr = session.get('num_imagenes_detr', 0)
 
-        # Inicializar contadores para YOLO y DETR
-        total_yolo = len([key for key in request.form.keys()
-                         if key.startswith('yolo_veredicto')])
-        total_detr = len([key for key in request.form.keys()
-                         if key.startswith('detr_veredicto')])
+        # Validar que existen valores
+        if num_imagenes_yolo == 0 or num_imagenes_detr == 0:
+            flash("Error: No se encontró el número de imágenes en la sesión.")
+            return redirect(url_for('resultadosA'))
 
-        # Contadores de métricas
+        # Contadores
         TP_yolo = FN_yolo = FP_yolo = TN_yolo = 0
         TP_detr = FN_detr = FP_detr = TN_detr = 0
+        faltan_veredictos = False
 
-        # Procesar resultados y validar simultáneamente
-        faltan_veredictos_yolo = False
-        faltan_veredictos_detr = False
-
-        for i in range(1, max(total_yolo, total_detr) + 1):
-            # YOLO
-            if i <= total_yolo:
-                veredicto_yolo = request.form.get(f'yolo_veredicto_{i}')
-                if not veredicto_yolo:
-                    faltan_veredictos_yolo = True
-                elif veredicto_yolo == '1':
+        # Procesar cada imagen (usar el número real de imágenes)
+        for i in range(1, num_imagenes_yolo + 1):
+            veredicto_yolo = request.form.get(f'yolo_veredicto_{i}')
+            if not veredicto_yolo:
+                faltan_veredictos = True
+            else:
+                veredicto_yolo = int(veredicto_yolo)
+                if veredicto_yolo == 1:
                     TP_yolo += 1
-                elif veredicto_yolo == '2':
+                elif veredicto_yolo == 2:
                     FN_yolo += 1
-                elif veredicto_yolo == '3':
+                elif veredicto_yolo == 3:
                     FP_yolo += 1
-                elif veredicto_yolo == '4':
+                elif veredicto_yolo == 4:
                     TN_yolo += 1
 
-            # DETR
-            if i <= total_detr:
-                veredicto_detr = request.form.get(f'detr_veredicto_{i}')
-                if not veredicto_detr:
-                    faltan_veredictos_detr = True
-                elif veredicto_detr == '1':
+        for i in range(1, num_imagenes_detr + 1):
+            veredicto_detr = request.form.get(f'detr_veredicto_{i}')
+            if not veredicto_detr:
+                faltan_veredictos = True
+            else:
+                veredicto_detr = int(veredicto_detr)
+                if veredicto_detr == 1:
                     TP_detr += 1
-                elif veredicto_detr == '2':
+                elif veredicto_detr == 2:
                     FN_detr += 1
-                elif veredicto_detr == '3':
+                elif veredicto_detr == 3:
                     FP_detr += 1
-                elif veredicto_detr == '4':
+                elif veredicto_detr == 4:
                     TN_detr += 1
 
-        # Validación de veredictos
-        if faltan_veredictos_yolo:
-            flash("Por favor selecciona un veredicto para todas las imágenes de YOLO.")
-            return redirect(url_for('resultadosA'))
-        if faltan_veredictos_detr:
-            flash("Por favor selecciona un veredicto para todas las imágenes de DETR.")
+        if faltan_veredictos:
+            flash("Debes seleccionar todos los veredictos.")
             return redirect(url_for('resultadosA'))
 
-        # Calcular métricas
+        # Calcular métricas (función mejorada)
         def calcular_metricas(TP, FN, FP, TN):
-            precision = round(TP / (TP + FP), 4) if (TP + FP) > 0 else 0
-            error = round((FP + FN) / (TP + TN + FP + FN),
-                          4) if (TP + TN + FP + FN) > 0 else 0
-            sensibilidad = round(TP / (TP + FN), 4) if (TP + FN) > 0 else 0
-            especificidad = round(TN / (TN + FP), 4) if (TN + FP) > 0 else 0
-            return precision, error, sensibilidad, especificidad
+            total = TP + FN + FP + TN
+            precision = TP / (TP + FP) if (TP + FP) > 0 else 0
+            sensibilidad = TP / (TP + FN) if (TP + FN) > 0 else 0
+            especificidad = TN / (TN + FP) if (TN + FP) > 0 else 0
+            error = (FP + FN) / total if total > 0 else 0
+            return [precision, error, sensibilidad, especificidad]
 
-        precision_yolo, error_yolo, sensibilidad_yolo, especificidad_yolo = calcular_metricas(
-            TP_yolo, FN_yolo, FP_yolo, TN_yolo)
-        precision_detr, error_detr, sensibilidad_detr, especificidad_detr = calcular_metricas(
-            TP_detr, FN_detr, FP_detr, TN_detr)
+        # Aplicar redondeo
+        metricas_yolo = [round(
+            val * 100, 2) for val in calcular_metricas(TP_yolo, FN_yolo, FP_yolo, TN_yolo)]
+        metricas_detr = [round(
+            val * 100, 2) for val in calcular_metricas(TP_detr, FN_detr, FP_detr, TN_detr)]
 
-        # Imprimir o guardar métricas
-        print(
-            f"YOLO - Precisión: {precision_yolo}, Error: {error_yolo}, Sensibilidad: {sensibilidad_yolo}, Especificidad: {especificidad_yolo}")
-        print(
-            f"DETR - Precisión: {precision_detr}, Error: {error_detr}, Sensibilidad: {sensibilidad_detr}, Especificidad: {especificidad_detr}")
-
-        precision_yoloF = round((precision_yolo*100), 2)
-        error_yoloF = round((error_yolo*100), 2)
-        sensibilidad_yoloF = round((sensibilidad_yolo*100), 2)
-        especificidad_yoloF = round((especificidad_yolo*100), 2)
-        precision_detrF = round((precision_detr*100), 2)
-        error_detrF = round((error_detr*100), 2)
-        sensibilidad_detrF = round((sensibilidad_detr*100), 2)
-        especificidad_detrF = round((especificidad_detr*100), 2)
-
-        print(f"Precision YOLO: {precision_yoloF}")
-        print(f"Error YOLO: {error_yoloF}")
-        print(f"Sensibilidad YOLO: {sensibilidad_yoloF}")
-        print(f"Especificidad YOLO: {especificidad_yoloF}")
-        print(f"Precision DETR: {precision_detrF}")
-        print(f"Error DETR: {error_detrF}")
-        print(f"Sensibilidad DETR: {sensibilidad_detrF}")
-        print(f"Especificidad DETR: {especificidad_detrF}")
+        # Insertar en BD (MEJORA: Usar parámetros para seguridad)
+        sql = """INSERT INTO evaluacion (
+                    idDataSetPrueba, NombreEvaluacion, 
+                    TiempoMinYOLO, ErrorYOLO, PrecisionYOLO, SensibilidadYOLO, EspecifidadYOLO,
+                    TiempoMinDETR, ErrorDETR, PrecisionDETR, SensibilidadDETR, EspecifidadDETR
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+        valores = (
+            idPrueba, nombre_evaluacion,
+            datos_evaluacion.get(
+                "tiempo_ejecucion_yolo", 0), metricas_yolo[1], metricas_yolo[0], metricas_yolo[2], metricas_yolo[3],
+            datos_evaluacion.get(
+                "tiempo_ejecucion_detr", 0), metricas_detr[1], metricas_detr[0], metricas_detr[2], metricas_detr[3]
+        )
 
         cursor = BaseDatos.connection.cursor()
-        sql = """INSERT INTO evaluacion (idDataSetPrueba,NombreEvaluacion,TiempoMinYOLO,ErrorYOLO,PrecisionYOLO,SensibilidadYOLO,EspecifidadYOLO,TiempoMinDETR,ErrorDETR,PrecisionDETR,SensibilidadDETR,EspecifidadDETR)
-                        VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}')""".format(idPrueba, nombre_evaluacion, tiempo_yolo, error_yoloF, precision_yoloF, sensibilidad_yoloF, especificidad_yoloF, tiempo_detr, error_detrF, precision_detrF, sensibilidad_detrF, especificidad_detrF)
-        cursor.execute(sql)
+        cursor.execute(sql, valores)
         BaseDatos.connection.commit()
         cursor.close()
 
-        flash("Evaluación guardada correctamente.", "success")
-        return redirect(url_for('reportesA'))
+        flash("¡Evaluación guardada correctamente!")
+        if tipoUsuario == "Tester":
+            return redirect(url_for('reportesT'))
+        if tipoUsuario == "Administrador":
+            return redirect(url_for('reportesA'))
 
     except Exception as e:
-        flash(f"Error al guardar la evaluación: {str(e)}", "danger")
-        return redirect(url_for('resultadosA'))
+        flash(f"Error grave: {str(e)}")
+        if tipoUsuario == "Tester":
+            return redirect(url_for('reportesT'))
+        if tipoUsuario == "Administrador":
+            return redirect(url_for('reportesA'))
 
 ############################################################################################################
 ######################################### CONFIGURACIÓN TESTER #############################################
 ############################################################################################################
 
 
-@ app.route('/tester', methods=['GET', 'POST'])
-@ login_required
+@app.route('/tester', methods=['GET', 'POST'])
+@login_required
 def tester():
     return render_template('test/Tester.html')
 
 
-@ app.route('/experimentadorT')
-@ login_required
+@app.route('/experimentadorT')
+@login_required
 def experimentadorT():
-    return render_template('test/experimentadorT.html')
+    Usuario = current_user.id
+    cursor = BaseDatos.connection.cursor()
+    cursor.execute("""
+        SELECT
+            d.NombreDataExp,
+            d.FormatoExp,
+            d.Imagenes,
+            tb.TipoBasura,
+            d.Tecnologia,
+            d.Ruta,
+            d.idDataSetExp
+        FROM
+            dataexperiment d
+        INNER JOIN
+            TiposBasura tb ON d.idTiposBasura = tb.idTiposBasura
+        WHERE
+            idUsuarios = %s
+    """, (Usuario,))
+
+    datas = cursor.fetchall()
+    cursor.close()
+    return render_template('test/experimentadorT.html', datas=datas)
 
 
-@ app.route('/evaluadorT')
-@ login_required
+@app.route('/evaluadorT')
+@login_required
 def evaluadorT():
-    return render_template('test/evaluadorT.html')
+    cursor = BaseDatos.connection.cursor()
+    cursor.execute("""
+        SELECT
+            e.NombreModelo,
+            e.Arquitectura,
+            e.PorcentajeErr,
+            e.Precision,
+            e.TiempoHoras,
+            e.Pesos,
+            u.Nombre AS NombreUsuario
+        FROM
+            experimentador e
+        INNER JOIN
+            Usuarios u ON e.idUsuarios = u.idUsuarios
+        WHERE
+            e.Arquitectura = 'YOLOV5'
+    """)
+    pesosY = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT
+            e.NombreModelo,
+            e.Arquitectura,
+            e.PorcentajeErr,
+            e.Precision,
+            e.TiempoHoras,
+            e.Pesos,
+            u.Nombre AS NombreUsuario
+        FROM
+            experimentador e
+        INNER JOIN
+            Usuarios u ON e.idUsuarios = u.idUsuarios
+        WHERE
+            e.Arquitectura = 'Transformer'
+    """)
+    pesosT = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT d.idDataSetPrueba,d.NombreData, d.Formato, d.Cantidad, u.Nombre, tb.TipoBasura,d.Ruta
+        FROM
+            datasetprueba d
+        INNER JOIN
+            Usuarios u ON d.idUsuarios = u.idUsuarios
+        INNER JOIN
+            TiposBasura tb ON d.idTiposBasura = tb.idTiposBasura
+        WHERE
+            u.idUsuarios = %s
+    """, (current_user.id,))
+
+    databasuras = cursor.fetchall()
+    cursor.close()
+    return render_template('test/evaluadorT.html', pesosY=pesosY, pesosT=pesosT, databasuras=databasuras)
 
 
-@ app.route('/reportesT')
-@ login_required
+@app.route('/reportesT')
+@login_required
 def reportesT():
-    return render_template('test/reportesT.html')
+    cursor = BaseDatos.connection.cursor()
+    cursor.execute("""
+        SELECT
+            NombreEvaluacion, TiempoMinYOLO, ErrorYOLO, PrecisionYOLO, SensibilidadYOLO, EspecifidadYOLO, TiempoMinDETR, ErrorDETR, PrecisionDETR, SensibilidadDETR, EspecifidadDETR
+        FROM
+            evaluacion""")
+
+    evaluaciones = cursor.fetchall()
+    cursor.close()
+    datos_graficos = [
+        {
+            'nombre': eval[0],
+            'tiempo_yolo': eval[1].total_seconds() / 60 if isinstance(eval[1], timedelta) else float(eval[1]),
+            'error_yolo': float(eval[2]) if eval[2] else 0,
+            'precision_yolo': float(eval[3]) if eval[3] else 0,
+            'sensibilidad_yolo': float(eval[4]) if eval[4] else 0,
+            'especifidad_yolo': float(eval[5]) if eval[5] else 0,
+            'tiempo_detr': eval[6].total_seconds() / 60 if isinstance(eval[6], timedelta) else float(eval[6]),
+            'error_detr': float(eval[7]) if eval[7] else 0,
+            'precision_detr': float(eval[8]) if eval[8] else 0,
+            'sensibilidad_detr': float(eval[9]) if eval[9] else 0,
+            'especifidad_detr': float(eval[10]) if eval[10] else 0
+        }
+        for eval in evaluaciones]
+    return render_template('test/reportesT.html', evaluaciones=evaluaciones, datos_graficos=datos_graficos)
 
 
-@ app.route('/crudUsuarioT')
-@ login_required
+@app.route('/crudUsuarioT')
+@login_required
 def crudUsuarioT():
     return render_template('test/crudUsuarioT.html')
 
 
-@ app.route('/editarUsuarioT/<string:correo>', methods=['POST'])
+@app.route('/editarUsuarioT/<string:correo>', methods=['POST'])
 def editarUsuarioT(correo):
     if request.method == 'POST':
         nombre = request.form['nombre']
@@ -1158,8 +1436,8 @@ def enviar_correo_notificacion_tester(email_usuario, nombre_usuario):
     Correo.send(msg)
 
 
-@ app.route('/CrudDatasetEval')
-@ login_required
+@app.route('/CrudDatasetEval')
+@login_required
 def CrudDatasetEval():
     cursor = BaseDatos.connection.cursor()
     cursor.execute('SELECT TipoBasura FROM tiposBasura')
@@ -1168,8 +1446,8 @@ def CrudDatasetEval():
     return render_template('admin/crudDatasetEval.html', tipos=tipos)
 
 
-@ app.route('/CrudDatasetA')
-@ login_required
+@app.route('/CrudDatasetA')
+@login_required
 def CrudDatasetA():
     cursor = BaseDatos.connection.cursor()
     cursor.execute('SELECT TipoBasura FROM tiposBasura')
@@ -1178,8 +1456,19 @@ def CrudDatasetA():
     return render_template('admin/crudDatasetPruebaA.html', tipos=tipos)
 
 
-@ app.route('/agregarDataset', methods=['POST'])
+@app.route('/CrudDatasetT')
+@login_required
+def CrudDatasetT():
+    cursor = BaseDatos.connection.cursor()
+    cursor.execute('SELECT TipoBasura FROM tiposBasura')
+    tipos = cursor.fetchall()
+    cursor.close()
+    return render_template('test/crudDatasetPruebaT.html', tipos=tipos)
+
+
+@app.route('/agregarDataset', methods=['POST'])
 def agregarDataset():
+    tipoUsuario = current_user.tipo
     archivos = request.files.getlist("Dataset[]")
     nombre_dataset = request.form.get('nombreDataset')
     tecnologia = request.form.get('Tecnologia')
@@ -1189,7 +1478,10 @@ def agregarDataset():
     # Verificar si los campos están vacíos
     if not all([archivos, nombre_dataset, tecnologia, formato, tipo_basura]):
         flash('Por favor, complete todos los campos')
-        return redirect(url_for('CrudDatasetA'))
+        if tipoUsuario == 'Administador':
+            return redirect(url_for('CrudDatasetA'))
+        if tipoUsuario == 'Tester':
+            return redirect(url_for('CrudDatasetT'))
 
     # Realiza la validación del dataset en función de la tecnología
     validacion_fallida = False
@@ -1499,8 +1791,9 @@ def guardar_dataset(nombre, ruta, formato, tecnologia, tipo_basura, cantidad_tot
         cursor.close()
 
 
-@ app.route('/eliminarDataset/<string:NombreDataExp>')
+@app.route('/eliminarDataset/<string:NombreDataExp>')
 def eliminarDataset(NombreDataExp):
+    tipoUsuario = current_user.tipo
     cursor = BaseDatos.connection.cursor()
     try:
         cursor.execute(
@@ -1512,7 +1805,10 @@ def eliminarDataset(NombreDataExp):
         BaseDatos.connection.commit()
 
         flash('Dataset eliminado satisfactoriamente', 'success')
-        return redirect(url_for('experimentadorA'))
+        if tipoUsuario == 'Administrador':
+            return redirect(url_for('experimentadorA'))
+        if tipoUsuario == 'Tester':
+            return redirect(url_for('experimentadorT'))
 
     except MySQLdb.IntegrityError as e:
         if e.args[0] == 1451:
@@ -1526,26 +1822,34 @@ def eliminarDataset(NombreDataExp):
             BaseDatos.connection.rollback()
             flash("Ocurrió un error al eliminar el dataset. Inténtalo de nuevo.", "error")
 
-        return redirect(url_for('experimentadorA'))
+        if tipoUsuario == 'Administrador':
+            return redirect(url_for('experimentadorA'))
+        if tipoUsuario == 'Tester':
+            return redirect(url_for('experimentadorT'))
 
     finally:
         cursor.close()
 
 
-@ app.route('/editarDataset/<string:NombreDataExp>')
+@app.route('/editarDataset/<string:NombreDataExp>')
 def editarDataset(NombreDataExp):
+    tipoUsuario = current_user.tipo
     cursor = BaseDatos.connection.cursor()
     sql = "SELECT NombreDataExp FROM dataexperiment WHERE NombreDataExp = %s"
     cursor.execute(sql, (NombreDataExp,))
     dataset = cursor.fetchone()
     Nombre = dataset[0]
+    cursor.close()
+    if tipoUsuario == 'Administrador':
+        return render_template('admin/editarDatasetExpAd.html', nombreDataset=Nombre)
+    if tipoUsuario == 'Tester':
+        return render_template('test/editarDatasetExpTes.html', nombreDataset=Nombre)
 
-    return render_template('admin/editarDatasetExpAd.html', nombreDataset=Nombre)
 
-
-@ app.route('/modificarDataset/<string:NombreDataset>', methods=['POST'])
+@app.route('/modificarDataset/<string:NombreDataset>', methods=['POST'])
 def modificarDataset(NombreDataset):
     if request.method == 'POST':
+        tipoUsuario = current_user.tipo
         Nombre = request.form['nombreDataset']
 
         cursor = BaseDatos.connection.cursor()
@@ -1555,8 +1859,11 @@ def modificarDataset(NombreDataset):
         existe = cursor.fetchone()
 
         if existe:
-            flash('Error: Ya existe un dataset con el mismo nombre')
-            return redirect(url_for('experimentadorA'))
+            flash('Ya existe un dataset con el mismo nombre')
+            if tipoUsuario == 'Administrador':
+                return redirect(url_for('experimentadorA'))
+            if tipoUsuario == 'Tester':
+                return redirect(url_for('experimentadorT'))
 
         sql = """UPDATE dataexperiment SET NombreDataExp = %s WHERE NombreDataExp = %s"""
         cursor.execute(sql, (Nombre, NombreDataset))
@@ -1565,7 +1872,12 @@ def modificarDataset(NombreDataset):
         BaseDatos.connection.commit()
         cursor.close()
         flash('Dataset actualizado satisfactoriamente')
-        return redirect(url_for('experimentadorA'))
+
+        if tipoUsuario == 'Administrador':
+            return redirect(url_for('experimentadorA'))
+        if tipoUsuario == 'Tester':
+            return redirect(url_for('experimentadorT'))
+
 
 # Configuración del manejo de errores
 

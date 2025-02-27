@@ -9,53 +9,59 @@
         <h1 id="Cab">Editar Usuario</h1>
         <form action="/editarUsuarioA/{{ correo }}" method="POST">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <div class="Form">
                 <input type="text" class="Formulario" name="nombre" placeholder="NOMBRE" value="{{ nombre }}">
                 <input type="text" class="Formulario" name="apellido" placeholder="APELLIDO" value="{{ apellido }}">
-            </div>
             <br><br>
-            <div class="Form">
                 <input type="email" class="Formulario" name="correo" placeholder="CORREO" value="{{ correo }}">
                 <input type="password" class="Formulario" name="contra" placeholder="CONTRASEÑA">
-            </div>
             <br>
-                <input type="date" class="Formulario" name="FechaRegistro" placeholder="FechaRegistro" value="{{ fechaRegistro.strftime('%Y-%m-%d') }}">
             <br>
-            <div class="Form">
                 <input type="text" class="Formulario" name="intereses" placeholder="INTERESES" value="{{ intereses }}">
                 <input type="text" class="Formulario" name="procedencia" placeholder="PROCEDENCIA" value="{{ procedencia }}">
-            </div>
             <br>
             <br>
-            <div class="Form">
-                <p>Tipo de Usuario:</p>
-                <input type="radio" id="opcion1" name="tipo" value="Administrador" {% if tipo == 'Administrador' %}checked{% endif %}>
-                <label for="opcion1">Administrador</label><br>
-                <input type="radio" id="opcion2" name="tipo" value="Tester" {% if tipo == 'Tester' %}checked{% endif %}>
-                <label for="opcion2">Tester</label><br>
-            </div>
-        
+                <input type="date" class="Formulario" name="FechaRegistro" placeholder="FechaRegistro" value="{{ fechaRegistro.strftime('%Y-%m-%d') }}">
+            <br><br>
+            <label for="seleccionTipoUsuario" class="labelSeleccionador">Selecciona el tipo de usuario:</label>
+            <input type="checkboxNuevoUsuarioA" id="theme-modeNuevoUsuarioA" class="modeNuevoUsuarioA" hidden />
+                <div class="containerNuevoUsuarioA">
+                    <div class="wrapNuevoUsuarioA">
+                        <input type="radio" id="opcion1" name="tipo" value="Administrador" {% if tipo == 'Administrador' %}checked{% endif %} hidden class="rd-admin"/>
+                        <label for="opcion1" class="labelNuevoUsuarioA" style="--index: 0;"><span>ADMINISTRADOR</span></label>
+
+                        <input type="radio" id="opcion2" name="tipo" value="Tester" {% if tipo == 'Tester' %}checked{% endif %} hidden class="rd-tester"/>
+                        <label for="opcion2" class="labelNuevoUsuarioA" style="--index: 1;"><span>TESTER</span></label>
+
+                        <div class="barNuevoUsuarioA"></div>
+                        <div class="slidebarNuevoUsuarioA"></div>
+                    </div>
+                </div>
     <!--CONTENEDOR DE BOTONES-->
-            <div class="contenedor-botones2">
-                <button class="BotonAceptar" type="submit">
-                    <div class="IAceptar">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-plus" viewBox="0 0 16 16">
-                            <path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H1s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C9.516 10.68 8.289 10 6 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
-                            <path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z"/>
+        <div class="contenedor-botones2">
+            <button class="botonRegistrar" type="submit">
+                <div class="svg-wrapper-1">
+                    <div class="svg-wrapperRegistrar">
+                        <svg class="svgRegistrar" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                            <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+                          </svg>
+                    </div>
+                </div>
+                <span class="spanRegistrar">Modificar</span>
+            </button>
+    
+            <button class="BotonCancelar" type="button" onclick="location.href='{{ url_for('crudUsuarioA') }}'">
+                <div class="svg-wrapper-1">
+                    <div class="svg-wrapperCancelar">
+                        <svg class="svgCancelar" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
                         </svg>
                     </div>
-                    <span>Guardar</span>
-                </button>
-                <button class="BotonCancelar" type="button" onclick="location.href='{{ url_for('crudUsuarioA') }}'">
-                    <div class="ICancelar">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
-                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
-                        </svg>
-                    </div>
-                    <span>Cancelar</span>
-                </button>
-            </div>
+                </div>
+                <span class="spanCancelar">Cancelar</span>
+            </button>
+        </div>
         </form>
         <footer id="Pie">
             Estadia - Aguilar Vargas Antonio Emmanuel - AVAO191844

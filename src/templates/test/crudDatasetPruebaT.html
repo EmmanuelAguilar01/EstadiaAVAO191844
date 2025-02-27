@@ -1,4 +1,4 @@
-{% extends 'baseAdmin.html' %}
+{% extends 'baseTester.html' %}
 {% block Titulo %}Gestión de Dataset{% endblock %}
 {% block Personal%}
         body{
@@ -6,7 +6,7 @@
         }
 {% endblock %}
 {% block Cuerpo %}
-    <h1 id="Cab">Gestión dataset para experimentar <br>Administrador</h1>
+    <h1 id="Cab">Gestión dataset para experimentar <br>Tester</h1>
     <div class="contenedor-principal">
         <form action="/agregarDataset" method="POST" enctype="multipart/form-data">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -74,7 +74,7 @@
                     <span class="spanRegistrar">Registrar</span>
                 </button>
         
-                <button class="BotonCancelar" type="button" onclick="location.href='{{ url_for('experimentadorA') }}'">
+                <button class="BotonCancelar" type="button" onclick="location.href='{{ url_for('experimentadorT') }}'">
                     <div class="svg-wrapper-1">
                         <div class="svg-wrapperCancelar">
                             <svg class="svgCancelar" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">

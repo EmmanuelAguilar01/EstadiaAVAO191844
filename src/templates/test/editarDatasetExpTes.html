@@ -1,12 +1,7 @@
-{% extends 'baseAdmin.html' %}
+{% extends 'baseTester.html' %}
 {% block Titulo %}Tipos de Basura{% endblock %}
-{% block Personal%}
-        body{
-            background-color: orange;
-        }
-{% endblock %}
 {% block Cuerpo %}
-    <h1 id="Cab">Editar dataset para experimentar <br>Administrador</h1>
+    <h1 id="Cab">Editar dataset para experimentar <br>Tester</h1>
     <div class="contenedor-principal">
         <form action="/modificarDataset/{{ nombreDataset }}" method="POST" enctype="multipart/form-data">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -14,7 +9,7 @@
                 <div class="contenedor-text">
                     <h4>Nombre del dataset:</h4>
                     <input type="text" class="Formulario" id="nombre-Dataset" name="nombreDataset" value="{{ nombreDataset }}"/>
-                </div>
+                </div><br>
                     <!-- Contenedor para mensajes -->
                     <div id="resultadoValidacion">
                         {{ mensaje_validacion }}
@@ -35,7 +30,7 @@
                     <span class="spanRegistrar">Modificar</span>
                 </button>
         
-                <button class="BotonCancelar" type="button" onclick="location.href='{{ url_for('experimentadorA') }}'">
+                <button class="BotonCancelar" type="button" onclick="location.href='{{ url_for('experimentadorT') }}'">
                     <div class="svg-wrapper-1">
                         <div class="svg-wrapperCancelar">
                             <svg class="svgCancelar" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">

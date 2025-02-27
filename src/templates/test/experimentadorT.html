@@ -1,92 +1,461 @@
 {% extends 'baseTester.html' %}
-{% block Titulo %}Reportes{% endblock %}
+{% block Titulo %}Experimentador{% endblock %}
 {% block Cuerpo %}
 <h1 id="Cab">Experimentador Tester</h1>
-<form action="/agregarBasura" method="POST">
+<form action="/EjecExperimentador" method="POST" enctype="multipart/form-data">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 <br>
 <div class="UnaTabla">
     <table id="Tabla">
         <thead>
             <tr>
-                <td>Nombre</td>
+                <td>Nombre Dataset</td>
+                <td>Tecnologia</td>
                 <td>Formato</td>
                 <td>Imagenes</td>
-                <td>Usuario</td>
                 <td>Tipo de basura</td>
+                <td id="BTabla">Acciones</td>
             </tr>
         </thead>
         <tbody>
-            {% for basura in basuras %}
+            {% for data in datas %}
             <tr>
-                <td >{{ basura.1 }}</td>
-                <td >{{ basura.2 }}</td>
-                <td >{{ basura.3 }}</td>
-                <td >{{ basura.4 }}</td>
+                <td >{{ data.0 }}</td>
+                <td >{{ data.4 }}</td>
+                <td >{{ data.1 }}</td>
+                <td >{{ data.2 }}</td>
+                <td >{{ data.3 }}</td>
                 <td >
-                    <a class="BotonEditar" type="submit" href="/editarBasuraA/{{ basura.1 }}" class="BotonEditar">
-                        <div class="IEditar">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
-                                <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
-                            </svg>
+                    <div class="acciones">
+                        <a class="BotonEditar" type="submit" href="/editarDataset/{{ data.0 }}">
+                            <div class="IEditar">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
+                                    <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+                                </svg>
+                            </div>
+                        </a>
+                        <a class="BotonEliminar" type="submit" href="/eliminarDataset/{{ data.0 }}">
+                            <div class="IEliminar">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
+                                    <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
+                                </svg>
+                            </div>
+                        </a>
+                        <div class="radio-buttons">
+                            <label class="radio-button">
+                                <input type="radio" name="ruta" value="{{ data.5 }}" data-tecnologia="{{ data.4 }}" id-dataset="{{data.6}}">
+                                <div class="radio-circle"></div>
+                            </label>
                         </div>
-                    </a>
-                    <a class="BotonEliminar" type="submit" href="/eliminarBasuraA/{{ basura.1 }}" class="BotonEliminar">
-                        <div class="IEliminar">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
-                                <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
-                            </svg>
-                        </div>
-                    </a>
+                    </div>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    <div class="boton-agregar">
+        <button type="button" class="button" onclick="location.href='{{ url_for('CrudDatasetT') }}'">
+            <span class="button__text">Agregar dataset</span>
+            <span class="button__icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 24 24" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" stroke="currentColor" height="24" fill="none" class="svg"><line y2="19" y1="5" x2="12" x1="12"></line><line y2="12" y1="12" x2="19" x1="5"></line></svg></span>
+        </button>
+    </div>
+    <br>
 </div>
 <br>
+<h3 id="TextoN">Configuración para entrenar un modelo:</h3>
 <div class="Tres-Columnas">
-    <div class="Primera">
-        <b>Tecnología a Utilizar:</b>
-        <br>
-        <input type="radio" id="YOLO" name="Tecnologia" value="YOLO">
-        <label for="opcion1">YOLO</label><br>
-      
-        <input type="radio" id="TRANS" name="Tecnologia" value="TRANS">
-        <label for="opcion2">Transformers</label><br>
+    <div class="container">
+        <b>Selecciona una tecnología:</b>
+        <div class="custom-radio">
+            <input type="radio" id="YOLO" name="Tecnologia" value="YOLO">
+            <label class="radio-label" for="YOLO">
+                <div class="radio-circle"></div>
+                <span class="radio-text">Yolo V5</span>
+            </label>
+            <input type="radio" id="TRANS" name="Tecnologia" value="TRANS" checked>
+            <label class="radio-label" for="TRANS">
+            <div class="radio-circle"></div>
+            <span class="radio-text">Transformers</span>
+            </label>
+        </div>
+    </div>      
+    <div class="nombreIn">
+        <b>Nombre del modelo:</b>
+        <input type="text" class="Formulario" name="name" id="name" placeholder="Nombre del modelo entrenado">
     </div>
-    <div class="Segunda">
-        <b>Épocas:</b><br>
-        <input type="text" name="Epocas" id="Epocas">
-    </div>
-    <div class="Tercera">
-        <b>Batch Size:</b><br>
-        <input type="text" name="Batch" id="Batch">
-    </div>
+    <div class="hiperparametros">
+        <div class="Fila">
+            <b>Épocas:</b><br>
+            <input type="number" class="selecNum" name="epocas" id="Epocas" min="5" max="100" step="1" value="15">
+        </div>
+        <div class="Fila">
+            <b>Batch Size:</b><br>
+            <input type="number" class="selecNum" name="batch_size" id="Batch" min="2" max="100" step="2" value="16">
+        </div>
+        <div class="Fila">
+            <b>Confianza (Threshold):</b><br>
+            <input type="number" class="selecNum" name="threshold" id="Threshold" min="0.1" max="0.9" step="0.1" value="0.2">
+        </div>
+        <div class="Fila">
+            <b>IOU Threshold:</b><br>
+            <input type="number" class="selecNum" name="iou_threshold" id="IOUThreshold" min="0.1" max="0.9" step="0.1" value="0.6">
+        </div>
+        <div class="Fila">
+            <b>Tamaño de imagen (px):</b><br>
+            <input type="number" class="selecNum" name="imgsz" id="imgsz" min="100" max="1000" step="1" value="416" disabled>
+        </div>
+    </div> 
 </div>
+    </div>
+    <input type="hidden" id="hidden_tecnologia" name="valorTech">
+    <input type="hidden" id="hidden_ruta" name="ruta">
+    <input type="hidden" id="hidden_ID" name="idDataset">
 <!--CONTENEDOR DE BOTONES-->
-<div class="contenedor-botones2">
-    <button class="BotonAceptar" type="submit">
-        <div class="IAceptar">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-plus" viewBox="0 0 16 16">
-                <path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H1s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C9.516 10.68 8.289 10 6 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
-                <path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z"/>
-            </svg>
-        </div>
-        <span>Experimentar</span>
-    </button>
-    <button class="BotonCancelar" type="button" onclick="location.href='{{ url_for('admin') }}'">
-        <div class="ICancelar">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
-                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
-            </svg>
-        </div>
-        <span>Cancelar</span>
+<div class="experimentador">
+    <button class="buttonExperimentar" type="submit">
+        <svg class="svgIconExperimentar" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
+        <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/>
+        </svg>
     </button>
 </div>
+<!-- Modal de procesamiento con animación -->
+<div id="processingModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="loader-container">
+<!-- From Uiverse.io by Nawsome --> 
+
+<div class="socket">
+    <div class="gel center-gel">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c1 r1">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c2 r1">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c3 r1">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c4 r1">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c5 r1">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c6 r1">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    
+    <div class="gel c7 r2">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    
+    <div class="gel c8 r2">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c9 r2">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c10 r2">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c11 r2">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c12 r2">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c13 r2">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c14 r2">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c15 r2">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c16 r2">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c17 r2">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c18 r2">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c19 r3">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c20 r3">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c21 r3">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c22 r3">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c23 r3">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c24 r3">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c25 r3">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c26 r3">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c28 r3">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c29 r3">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c30 r3">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c31 r3">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c32 r3">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c33 r3">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c34 r3">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c35 r3">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c36 r3">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    <div class="gel c37 r3">
+        <div class="hex-brick h1"></div>
+        <div class="hex-brick h2"></div>
+        <div class="hex-brick h3"></div>
+    </div>
+    
+</div>
+        </div>
+        <h3 id="processingMessage">Procesando...</h3>
+        <p id="processingDetails">Este proceso puede tomar varios minutos. Por favor, espere...</p>
+    </div>
+</div>
+
 </form>
 <footer id="Pie">
 Estadia - Aguilar Vargas Antonio Emmanuel - AVAO191844
 </footer>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Obtener los campos y radio buttons
+        const tecnologiaYolo = document.querySelector('input[name="Tecnologia"][value="YOLO"]');
+        const tecnologiaTrans = document.querySelector('input[name="Tecnologia"][value="TRANS"]');
+        const camposYolo = ['imgsz'];
+        const radios = document.querySelectorAll('input[type="radio"][name="ruta"]');
+        const form = document.querySelector('form');
+        const modal = document.getElementById('processingModal');
+        const processingMessage = document.getElementById('processingMessage');
+
+        // Habilitar los campos de YOLO cuando se selecciona la opción de YOLO
+        tecnologiaYolo.addEventListener('change', function() {
+            if (this.checked) {
+                camposYolo.forEach(function(campo) {
+                    document.getElementById(campo).disabled = false;
+                });
+            }
+        });
+
+        // Deshabilitar los campos de YOLO cuando se selecciona la opción de TRANS
+        tecnologiaTrans.addEventListener('change', function() {
+            if (this.checked) {
+                camposYolo.forEach(function(campo) {
+                    document.getElementById(campo).disabled = true;
+                });
+            }
+        });
+
+// Manejar el envío del formulario
+form.addEventListener('submit', function(event) {
+            event.preventDefault(); // Detener el envío normal del formulario
+            
+            const tecnologia = document.querySelector('input[name="Tecnologia"]:checked').value;
+            if (tecnologia === "YOLO") {
+                // Verificación adicional para YOLO
+                const imgsz = document.getElementById('imgsz');
+                
+                if (imgsz.disabled) {
+                    alert('Los campos de YOLO no están habilitados correctamente.');
+                    return false;
+                }
+            }
+            
+            // Mostrar el modal con animación
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
+            
+            // Enviar el formulario mediante AJAX
+            const formData = new FormData(form);
+            
+            fetch('/EjecExperimentador', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    modal.classList.remove('show');
+                    setTimeout(() => {
+                        modal.style.display = 'none';
+                    }, 300);
+                    alert(data.error);
+                    return;
+                }
+                
+                processingMessage.textContent = data.mensaje;
+                
+                // Verificar periódicamente el estado de la tarea
+                checkTaskStatus(data.task_id);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                modal.classList.remove('show');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 300);
+                alert('Error al iniciar el proceso. Por favor, inténtelo de nuevo.');
+            });
+        });
+        
+        function checkTaskStatus(taskId) {
+            const statusInterval = setInterval(function() {
+                fetch(`/check_task_status/${taskId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'completed') {
+                        clearInterval(statusInterval);
+                        
+                        // Animar la salida del modal
+                        modal.classList.remove('show');
+                        setTimeout(() => {
+                            modal.style.display = 'none';
+                            // Redirigir a la URL especificada
+                            window.location.href = data.redirect_url;
+                        }, 300);
+                    }
+                    // Si sigue corriendo, simplemente continuamos esperando
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    clearInterval(statusInterval);
+                    
+                    // Animar la salida del modal en caso de error
+                    modal.classList.remove('show');
+                    setTimeout(() => {
+                        modal.style.display = 'none';
+                    }, 300);
+                    
+                    alert('Error al verificar el estado del proceso. Por favor, verifique manualmente si el proceso ha finalizado.');
+                });
+            }, 3000); // Verificar cada 3 segundos
+        }
+
+        radios.forEach(radio => {
+            radio.addEventListener('change', function () {
+                const valtecnologia = this.getAttribute('data-tecnologia');
+                const idData = this.getAttribute('id-dataset')
+                const ruta = this.value;
+
+                document.getElementById('hidden_tecnologia').value = valtecnologia;
+                document.getElementById('hidden_ruta').value = ruta;
+                document.getElementById('hidden_ID').value = idData;
+            });
+        });
+    });
+</script>
+
 {% endblock %}
