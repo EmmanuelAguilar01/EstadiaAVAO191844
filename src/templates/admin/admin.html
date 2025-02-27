@@ -1,43 +1,25 @@
     {% extends 'baseAdmin.html' %}
     {% block Titulo %}Principal{% endblock %}
     {% block Cuerpo %}
-    <h1 id="Cab">Hola {{current_user.nombre}} {{current_user.apellido}}, eres Administrador</h1>
-        <!-- Modal para mensajes flash -->
-        <div class="modal fade" id="flashModal" tabindex="-1" role="dialog" aria-labelledby="flashModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                <h5 class="modal-title" id="flashModalLabel">Mensaje de Validación</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                </div>
-                <div class="modal-body">
-                {% with messages = get_flashed_messages() %}
-                    {% if messages %}
-                    {% for message in messages %}
-                        {{ message }}
-                    {% endfor %}
-                    {% endif %}
-                {% endwith %}
-                </div>
-                <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
-            </div>
-        </div>
+    <h1 class="CabInicio">
+        <span id="inicioTexto">Bienvenido {{current_user.nombre}} {{current_user.apellido}}.</span> 
+        <span id="inicioTexto"> Eres un usuario Administrador</span>
+    </h1>
+    
+    <div class="CentrarRadar">
+        <div class="radarInicio">
+            <span></span>
         
-        <script>
-        $(document).ready(function() {
-            {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                $('#flashModal').modal('show');
-                setTimeout(function() {
-                    $('#flashModal').modal('hide');
-                }, 3000);
-            {% endif %}
-            {% endwith %}
-        });
-        </script>  
+            <div id="dot-1" class="dot"></div>
+            <div id="dot-2" class="dot"></div>
+            <div id="dot-3" class="dot"></div>
+            <div id="dot-4" class="dot"></div>
+            <div id="dot-5" class="dot"></div>
+        </div>    
+    </div>
+    <h1 class="TextoBienvenida">Para navegar por este sistema, utiliza las opciones de la barra superior.</h1>
+    
+    <footer id="Pie">
+        Estadia - Aguilar Vargas Antonio Emmanuel - AVAO191844
+    </footer>
     {% endblock %}

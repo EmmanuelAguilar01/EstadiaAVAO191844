@@ -1,5 +1,25 @@
 {% extends 'baseTester.html' %}
 {% block Titulo %}Principal{% endblock %}
 {% block Cuerpo %}
-<h1 id="Cab">Hola {{current_user.nombre}} {{current_user.apellido}}, eres Tester</h1>
+<h1 class="CabInicio">
+    <span id="inicioTexto">Bienvenido {{current_user.nombre}} {{current_user.apellido}}.</span> 
+    <span id="inicioTexto"> Eres un usuario Tester</span>
+</h1>
+
+<div class="CentrarRadar">
+    <div class="radarInicio">
+        <span></span>
+    
+        <div id="dot-1" class="dot"></div>
+        <div id="dot-2" class="dot"></div>
+        <div id="dot-3" class="dot"></div>
+        <div id="dot-4" class="dot"></div>
+        <div id="dot-5" class="dot"></div>
+    </div>    
+</div>
+<h1 class="TextoBienvenida">Para navegar por este sistema, utiliza las opciones de la barra superior.</h1>
+
+<footer id="Pie">
+    Estadia - Aguilar Vargas Antonio Emmanuel - AVAO191844
+</footer>
 {% endblock %}
