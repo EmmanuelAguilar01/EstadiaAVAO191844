@@ -7,4 +7,5 @@ src/Pesos/**
 src/Datasets/**
 sendgrid.env
 src/Models/Transformers/lightning_logs
+src/Models/YoloV5
 src/Evaluaciones
