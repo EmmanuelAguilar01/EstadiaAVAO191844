@@ -1,0 +1,8 @@
+idDataSetExp,idUsuarios,idTiposBasura,NombreDataExp,FormatoExp,Imagenes,Tecnologia,Ruta
+20,1,17,YoloV5T,.jpg,4187,YOLO,C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Datasets\calidar
+30,42,19,Validara,.jpg,431,Transformer,C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Datasets\hackathone.v2i.coco
+31,1,15,TransLite,.jpg,1517,Transformer,C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Datasets\Intento
+34,42,9,Yolo1000,.jpg,1501,YOLO,C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Datasets\Yolo1000
+35,1,10,Yolo300,.jpg,431,YOLO,C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Datasets\Yolo300
+36,43,18,TransYa,.jpg,431,Transformer,C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Datasets\hackathone.v2i.coco
+37,43,16,IntentoAnotacio,.jpg,4187,YOLO,C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Datasets\calidar

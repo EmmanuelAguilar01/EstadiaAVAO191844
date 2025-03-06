@@ -1,6 +1,7 @@
 # Importación de librerias para el proyecto
 from datetime import datetime, date, timedelta
 import os
+import sys
 import json
 import subprocess
 import threading
@@ -37,9 +38,11 @@ Token.init_app(app)
 
 # Conexion a la base de datos
 BaseDatos = MySQL(app)
+directorio_script = os.path.dirname(os.path.abspath(__file__))
 
 # Configuración de el directorio de Datasets:
-UPLOAD_FOLDER = r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Datasets'
+UPLOAD_FOLDER = os.path.join(directorio_script, "Datasets")
+
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Configuración para uso del administrador de correo electrónico
@@ -133,7 +136,7 @@ def new():
 
 @app.route('/<path:filename>')
 def serve_file(filename):
-    base_path = r"C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema"
+    base_path = os.path.join(directorio_script)
     return send_from_directory(base_path, filename)
 
 # Configuración del módulo para agregar un nuevo usuario sin ininicar sesión
@@ -309,16 +312,25 @@ def YOLO(epocas, batch_size, threshold, iou_threshold, imgsz, ruta, name, idData
     print(
         f"Iniciando YOLO con los siguientes parámetros: Epocas:{epocas}, BS:{batch_size}, IMG:{imgsz}, RutaDataset:{ruta}, Nombre:{name},ID_Usuario:{Usuario},IDDAtaset:{idDataset},Confianza:{threshold},Interseccón:{iou_threshold},Arquitectura:{arquitecturaModelo},TipoUsuario:{tipoUsuario}")
 
-    subprocess.run([r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\Sistema\Scripts\python.exe',
-                    r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Models\YoloV5\YOLOV5.py',
+    directorio_base = os.path.dirname(
+        directorio_script)
+
+    ruta_python = sys.executable
+
+    ruta_yolo = os.path.join(directorio_base, "src",
+                             "Models", "YoloV5", "YOLOV5.py")
+
+    subprocess.run([ruta_python,
+                    ruta_yolo,
                     '--epochs', str(epocas),
                     '--batch-size', str(batch_size),
                     '--imgsz', str(imgsz),
                     '--name', name],
                    shell=True, check=True, env=env)
 
-    ruta_json = os.path.join(
-        "C:\\Users\\nayel\\Desktop\\Estadia - AVAO191844\\Sistema\\src\\Pesos\\YOLO", name, "metricas.json")
+    ruta_pJson = os.path.join(directorio_script, "Pesos", "YOLO")
+
+    ruta_json = os.path.join(ruta_pJson, name, "metricas.json")
 
     if os.path.exists(ruta_json):
         with open(ruta_json, 'r') as archivo_resultados:
@@ -361,13 +373,24 @@ def Transformers(epocas, batch_size, threshold, iou_threshold, ruta, name, idDat
     print(
         f"Iniciando DETR con los siguientes parámetros: Epocas:{epocas}, BS:{batch_size}, RutaDataset:{ruta}, Nombre:{name},ID_Usuario:{Usuario},IDDAtaset:{idDataset},Confianza:{threshold},Interseccón:{iou_threshold},Arquitectura:{arquitecturaModelo},TipoUsuario:{tipoUsuario}")
 
-    subprocess.run([r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\Sistema\Scripts\python.exe',
-                    r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Models\Transformers\Transformer.py',
+    directorio_base = os.path.dirname(
+        directorio_script)  # O ajusta según necesites
+
+# Usar sys.executable para obtener la ruta al intérprete de Python actual
+    # Esto te da la ruta del intérprete que está ejecutando este código
+    ruta_python = sys.executable
+
+    # Construir la ruta al script detect.py
+    ruta_Transformer = os.path.join(
+        directorio_base, "src", "Models", "Transformers", "Transformer.py")
+
+    subprocess.run([ruta_python,
+                    ruta_Transformer,
                     '--epocas', epocas, '--batch_size', batch_size, '--threshold', threshold,
                     '--iou_threshold', iou_threshold, '--ruta', ruta, '--name', name], shell=True, check=True)
 
-    ruta_json = os.path.join(
-        "C:\\Users\\nayel\\Desktop\\Estadia - AVAO191844\\Sistema\\src\\Pesos\\Transformers", name, "metricas.json")
+    ruta_json = os.path.join(directorio_base, "Pesos",
+                             "Transformers", name, "metricas.json")
 
     if os.path.exists(ruta_json):
         with open(ruta_json, 'r') as archivo_resultados:
@@ -685,7 +708,7 @@ def eliminarBasuraA(tipoBasura):
         'DELETE FROM tiposbasura WHERE tipoBasura = %s', (tipoBasura,))
     BaseDatos.connection.commit()
     cursor.close()
-    flash('Usuario eliminado satisfactoriamente')
+    flash('Registro de basura eliminado satisfactoriamente')
     return redirect(url_for('crudBasuraA'))
 
 
@@ -717,7 +740,7 @@ def editarBasuraAdmin(tipoBasura):
                        tiempoDegradacion, tipoBasura))
         BaseDatos.connection.commit()
         cursor.close()
-        flash('Contacto actualizado satisfactoriamente')
+        flash('Tipo de basura actualizado satisfactoriamente')
         return redirect(url_for('crudBasuraA'))
 
 
@@ -1012,9 +1035,8 @@ def evaluarA():
         "completado": False,
         "tipoUsuario": tipoUsuario
     }
-
     directorio_base = os.path.join(
-        "C:\\Users\\nayel\\Desktop\\Estadia - AVAO191844\\Sistema\\src\\Evaluaciones", nombre_evaluacion)
+        directorio_script, "Evaluaciones", nombre_evaluacion)
 
     directorio_yolo = os.path.join(directorio_base, 'YOLO')
     os.makedirs(directorio_yolo, exist_ok=True)
@@ -1035,9 +1057,16 @@ def evaluarA():
 
             inicio_yolo = time.time()
 
+            # Esto te da la ruta del intérprete que está ejecutando este código
+            ruta_python = sys.executable
+
+# Construir la ruta al script detect.py
+            ruta_resultadoYOLO = os.path.join(
+                directorio_script, "EvaluarYOLO.py")
+
             resultado_yolo = subprocess.run([
-                r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\Sistema\Scripts\python.exe',
-                r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\EvaluarYOLO.py',
+                ruta_python,
+                ruta_resultadoYOLO,
                 "--weights", PesoYolo, "--source", dataset_seleccionado, "--guardado", directorio_yolo
             ], shell=True, capture_output=True, text=True, check=True)
 
@@ -1057,9 +1086,14 @@ def evaluarA():
 
             inicio_detr = time.time()
 
+            ruta_python = sys.executable
+
+            ruta_resultadoDETR = os.path.join(
+                directorio_script, "EvaluarDETR.py")
+
             resultado_detr = subprocess.run([
-                r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\Sistema\Scripts\python.exe',
-                r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\EvaluarDETR.py',
+                ruta_python,
+                ruta_resultadoDETR,
                 "--weights", PesoDETR, "--source", dataset_seleccionado, "--guardado", directorio_detr
             ], shell=True, capture_output=True, text=True, check=True)
 
@@ -1113,7 +1147,7 @@ def resultadosA():
     yolo_dir = session.get('directorio_yolo')
     detr_dir = session.get('directorio_detr')
 
-    directorio_base = r"C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema"
+    directorio_base = os.path.join(directorio_script)
 
     yolo_relative_dir = os.path.relpath(yolo_dir, directorio_base)
     detr_relative_dir = os.path.relpath(detr_dir, directorio_base)
@@ -1154,7 +1188,7 @@ def GuardarEvaluacion():
     idPrueba = session.get('idDatasetPrueba')
 
     directorio_base = os.path.join(
-        "C:\\Users\\nayel\\Desktop\\Estadia - AVAO191844\\Sistema\\src\\Evaluaciones", nombre_evaluacion)
+        directorio_script, "Evaluaciones", nombre_evaluacion)
 
     if not nombre_evaluacion:
         flash("No se encontró el nombre de la evaluación en la sesión.")
@@ -1480,11 +1514,11 @@ def agregarDataset():
         flash('Por favor, complete todos los campos')
         if tipoUsuario == 'Administador':
             return redirect(url_for('CrudDatasetA'))
-        if tipoUsuario == 'Tester':
-            return redirect(url_for('CrudDatasetT'))
+        return redirect(url_for('CrudDatasetT'))
 
     # Realiza la validación del dataset en función de la tecnología
     validacion_fallida = False
+    cantidad_total, cantidad_test = 0, 0
 
     if tecnologia == "YOLO":
         validacion_fallida, mensaje_error, cantidad_total, cantidad_test = validar_estructura_yolo(
@@ -1521,13 +1555,13 @@ def agregarDataset():
     guardar_dataset(nombre_dataset, ruta_guardado, formato,
                     tecnologia, tipo_basura, cantidad_total, cantidad_test, ruta_test)
 
-    flash("El dataset '{nombre_dataset}' ha sido guardado correctamente.")
+    flash(f"El dataset '{nombre_dataset}' ha sido guardado correctamente.")
     return redirect(url_for('experimentadorA'))
 
 
 def validar_estructura_yolo(archivos, formato):
     # Ruta base donde se encuentran los datasets
-    base_datasets = "C:\\Users\\nayel\\Desktop\\Estadia - AVAO191844\\Sistema\\src\\Datasets"
+    base_datasets = os.path.join(directorio_script, "Datasets")
 
     ruta = archivos[0]
     ruta_base = os.path.dirname(ruta.filename)
@@ -1556,10 +1590,12 @@ def validar_estructura_yolo(archivos, formato):
                 dataset_estructura_yolo['train']['labels'].append(
                     ruta_absoluta)
             elif '/images/' in ruta_relativa:
-                if ruta_relativa.endswith(formato):
+                if ruta_relativa.endswith(formato.lower()):
                     dataset_estructura_yolo['train']['images'].append(
                         ruta_absoluta)
                 else:
+                    # <-- Depuración
+                    print(f"Formato incorrecto en: {ruta_relativa}")
                     error_formato = True
                     formato_correcto = False
 
@@ -1567,10 +1603,14 @@ def validar_estructura_yolo(archivos, formato):
             if '/labels/' in ruta_relativa and ruta_relativa.endswith('.txt'):
                 dataset_estructura_yolo['test']['labels'].append(ruta_absoluta)
             elif '/images/' in ruta_relativa:
-                if ruta_relativa.endswith(formato):
+                if ruta_relativa.lower().endswith(formato.lower()):
                     dataset_estructura_yolo['test']['images'].append(
                         ruta_absoluta)
+                elif ruta_relativa.lower().endswith('.json'):
+                    # Solo para depuración
+                    print(f"Ignorando archivo JSON: {ruta_relativa}")
                 else:
+                    print(f"Formato incorrecto en: {ruta_relativa}")
                     error_formato = True
                     formato_correcto = False
 
@@ -1579,16 +1619,18 @@ def validar_estructura_yolo(archivos, formato):
                 dataset_estructura_yolo['valid']['labels'].append(
                     ruta_absoluta)
             elif '/images/' in ruta_relativa:
-                if ruta_relativa.endswith(formato):
+                if ruta_relativa.endswith(formato.lower()):
                     dataset_estructura_yolo['valid']['images'].append(
                         ruta_absoluta)
                 else:
+                    # <-- Depuración
+                    print(f"Formato incorrecto en: {ruta_relativa}")
                     error_formato = True
                     formato_correcto = False
 
     # Si el formato es incorrecto, regresamos el error
     if error_formato:
-        return True, f"Error: No hay ninguna imagen con formato {formato}, Valida nuevamente tu dataset", ""
+        return True, f"Error: No hay ninguna imagen con formato {formato}, Valida nuevamente tu dataset", 0, 0
 
     # Validar si las carpetas tienen la estructura necesaria
     for carpeta, contenido in dataset_estructura_yolo.items():
@@ -1597,7 +1639,7 @@ def validar_estructura_yolo(archivos, formato):
 
     # Si hay errores en las carpetas, regresamos el error correspondiente
     if error_carpeta:
-        return True, f"Error: La carpeta {carpeta} no contiene los archivos necesarios para YOLO", ""
+        return True, f"Error: La carpeta {carpeta} no contiene los archivos necesarios para YOLO", 0, 0
 
     # Contar imágenes en cada carpeta
     cantidad_train = len(dataset_estructura_yolo['train']['images'])

@@ -1,0 +1,4 @@
+idUsuarios,Nombre,Apellido,Correo,Contra,Tipo,FechaRegistro,Intereses,Procedencia
+1,Emmanuel,Aguilar,emmanuel.agva@gmail.com,pbkdf2:sha256:260000$6sriSZJ9pbZWkdQB$a0da53c3c312549f044607e55a6983fcb52811366b14709699e9e36f86c101c9,Administrador,2024-07-02,Conocer sobre modelos de deteccion,Upemor
+42,Antonio,Vargas,r-emmanuel_n@hotmail.com,pbkdf2:sha256:260000$bw53RUADRrkZPGo4$33788b6ed8a023c373985a92c7824d28ec2e76b4bdec4e5dba7a6cba29167f49,Tester,2024-09-10,Practicar,Upemore
+43,Sandra,Yadira,negociosagva@gmail.com,pbkdf2:sha256:260000$NquEK5s6Pe0yHZfK$dfd6437ff763e14d3d15d6726fa495219af1136787a081a1d5a4dfe10abc0bfc,Administrador,2024-11-15,Ayudar,FrayLucca

@@ -1,5 +1,7 @@
 import subprocess
 import argparse
+import os
+import sys
 
 
 def ejecutar_detect(weights, img_size, conf_thres, iou_thres, source, guardado):
@@ -13,10 +15,17 @@ def ejecutar_detect(weights, img_size, conf_thres, iou_thres, source, guardado):
         iou_thres (float): Umbral de IoU (Intersection over Union).
         source (str): Ruta al directorio o archivo de entrada.
     """
+    directorio_script = os.path.dirname(os.path.abspath(__file__))
+    directorio_base = os.path.dirname(directorio_script)
+    ruta_python = sys.executable
+    ruta_detect = os.path.join(
+        directorio_base, "src", "Models", "YoloV5", "detect.py")
+
     try:
         # Construir el comando
         comando = [
-            r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\Sistema\Scripts\python.exe', r'C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Models\YoloV5\detect.py',
+            ruta_python,
+            ruta_detect,
             "--weights", weights,
             "--img", str(img_size),
             "--conf-thres", str(conf_thres),

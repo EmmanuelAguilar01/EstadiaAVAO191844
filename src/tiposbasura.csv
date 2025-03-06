@@ -1,0 +1,11 @@
+idTiposBasura,TipoBasura,Descrip,Afectaciones,TiempoDegradacion
+1,Plástico PET,Botellas PET reciclables,Contaminación marina y terrestre,450
+9,Residuos Electrónico,"Celulares, computadoras y electrodomésticos","Metales pesados, contaminación del suelo",1200
+10,Desechos Orgánicos,Restos de comida y desechos vegetales,"Emisión de metano, proliferación de plagas",0
+15,Bolsas plásticas,Bolsas de supermercado,"Bloqueo de desagües, afecta fauna",300
+16,Latas de aluminio,Latas de bebidas y conservas,Contaminación por metales,400
+17,Vidrio,Botellas y frascos de vidrio,Puede causar incendios,4000
+18,Pilas y baterías,Pilas comunes y recargables,"Metales pesados, contaminación de agua",700
+19,Colillas de cigarro,Filtros de cigarro,Contaminación del agua y suelos,5
+20,Cartón y papel,Cajas de cartón y papel,Desperdicio de recursos,1
+21,Aceites usados,Aceites de cocina y motor,Contaminación del agua,1000

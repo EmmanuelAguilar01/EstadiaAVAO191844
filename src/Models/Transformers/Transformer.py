@@ -139,9 +139,11 @@ def collate_fn(batch):
         'labels': labels
     }
 
+
 def convert_to_xywh(boxes):
-        xmin, ymin, xmax, ymax = boxes.unbind(1)
-        return torch.stack((xmin, ymin, xmax - xmin, ymax - ymin), dim=1)
+    xmin, ymin, xmax, ymax = boxes.unbind(1)
+    return torch.stack((xmin, ymin, xmax - xmin, ymax - ymin), dim=1)
+
 
 def prepare_for_coco_detection(predictions):
     coco_results = []
@@ -167,6 +169,7 @@ def prepare_for_coco_detection(predictions):
         )
     return coco_results
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--epocas", type=int, required=True)
@@ -179,8 +182,9 @@ if __name__ == "__main__":
 
     dataset = Dataset(args.ruta)
 
-    # Define tu ruta personalizada para guardar los logs
-    directorioBase = "C:\\Users\\nayel\\Desktop\\Estadia - AVAO191844\\Sistema\\src\\Pesos\\Transformers"
+    directorio_script = os.path.dirname(os.path.abspath(__file__))
+    directorioBase = os.path.join(
+        directorio_script, "..", "..", "src", "Pesos", "Transformers")
 
     directorioPersonalizado = os.path.join(directorioBase, args.name)
     os.makedirs(directorioPersonalizado, exist_ok=True)
@@ -270,7 +274,8 @@ if __name__ == "__main__":
 
     tiempo_formateado = str(timedelta(seconds=tiempo_total))
 
-    CHECKP_DIR = "C:\\Users\\nayel\\Desktop\\Estadia - AVAO191844\\Sistema\\src\\Checkpoints"
+    directorio_script = os.path.dirname(os.path.abspath(__file__))
+    CHECKP_DIR = os.path.join(directorio_script,"..","..", "src", "Checkpoints")
     CHECKPOINT_PATH = os.path.join(CHECKP_DIR, args.name)
     os.makedirs(CHECKPOINT_PATH, exist_ok=True)
 
