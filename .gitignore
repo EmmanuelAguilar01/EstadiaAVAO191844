@@ -9,3 +9,5 @@ sendgrid.env
 src/Models/Transformers/lightning_logs
 src/Models/YoloV5/**
 src/Evaluaciones
+src/Pesos.rar
+src/Models/YoloV5
