@@ -18,14 +18,14 @@
                 {% for yolo_img, detr_img in zip(yolo_images, detr_images) %}
                 <tr>
                     <td><img src="{{ yolo_img }}" alt="Resultado YOLO" style="width: 150px;"></td>
-                    <td>
+                    <td style=" text-align: left;">
                             <input type="radio" name="yolo_veredicto_{{ loop.index }}" value="1"> Hay basura y sí se detectó<br>
                             <input type="radio" name="yolo_veredicto_{{ loop.index }}" value="2"> Hay basura y no se detectó<br>
                             <input type="radio" name="yolo_veredicto_{{ loop.index }}" value="3"> No hay basura y se detectó<br>
                             <input type="radio" name="yolo_veredicto_{{ loop.index }}" value="4"> No hay basura y no se detectó
                     </td>
                     <td><img src="{{ detr_img }}" alt="Resultado DETR" style="width: 150px;"></td>
-                    <td>
+                    <td style=" text-align: left;">
                             <input type="radio" name="detr_veredicto_{{ loop.index }}" value="1"> Hay basura y sí se detectó<br>
                             <input type="radio" name="detr_veredicto_{{ loop.index }}" value="2"> Hay basura y no se detectó<br>
                             <input type="radio" name="detr_veredicto_{{ loop.index }}" value="3"> No hay basura y se detectó<br>

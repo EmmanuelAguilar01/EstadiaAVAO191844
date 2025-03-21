@@ -12,11 +12,11 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="parte-superior">
                 <div class="contenedor-file">
-                    <h4>Elige un dataset:</h4>
+                    <h4 class="labelSeleccionador">Elige un dataset:</h4>
                     <input type="file" class="Formulario" name="Dataset[]" id="Dataset" webkitdirectory multiple>
                 </div><br>
                 <div class="contenedor-text">
-                    <h4>Nombre del dataset:</h4>
+                    <h4 class="labelSeleccionador">Nombre del dataset:</h4>
                     <input type="text" class="Formulario" id="nombre-Dataset" name="nombreDataset" value="{{ request.form.get('nombreDataset', '') }}" />
                 </div><br>
                 <div class="contenedor-tecnologia-formato-tipo">

@@ -136,122 +136,184 @@
 
     // Función para crear el gráfico de tiempo vs precisión
     function createTiempoPrecisionChart(data) {
-        const ctx = document.getElementById('tiempoPrecisionChart').getContext('2d');
-        return new Chart(ctx, {
-            type: 'scatter',
-            data: {
-                datasets: [{
-                    label: 'YOLO',
-                    data: data.map(d => ({
-                        x: parseNumber(d.tiempo_yolo),
-                        y: parseNumber(d.precision_yolo)
-                    })),
-                    backgroundColor: 'rgba(54, 162, 235, 0.5)'
-                },
-                {
-                    label: 'DETR',
-                    data: data.map(d => ({
-                        x: parseNumber(d.tiempo_detr),
-                        y: parseNumber(d.precision_detr)
-                    })),
-                    backgroundColor: 'rgba(255, 99, 132, 0.5)'
-                }]
+    const ctx = document.getElementById('tiempoPrecisionChart').getContext('2d');
+    return new Chart(ctx, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'YOLO',
+                data: data.map(d => ({
+                    x: parseNumber(d.tiempo_yolo),
+                    y: parseNumber(d.precision_yolo)
+                })),
+                backgroundColor: '#a766ac',
+                borderColor: '#a766ac',
+                pointBackgroundColor: '#a766ac',
             },
-            options: {
-                responsive: true,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Tiempo vs Precisión',
-                        font: {
-                            size: 22,
-                            family: 'TODOC'
-                        }
-                    }
-                },
-                scales: { 
-                    x: { title: { display: true, text: 'Tiempo (minutos)',font: {
-                            size: 16,
-                            family: 'TODON'
-                        } }, grid: { color: '#747576' },
-                    ticks: {
+            {
+                label: 'DETR',
+                data: data.map(d => ({
+                    x: parseNumber(d.tiempo_detr),
+                    y: parseNumber(d.precision_detr)
+                })),
+                backgroundColor: '#2194a7',
+                borderColor: '#2194a7',
+                pointBackgroundColor: '#2194a7',
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Tiempo vs Precisión',
                     font: {
-                        family: 'TODOC',
-                        size: 14,
-                        }
-                    }
-                }, y: { title: { display: true, text: 'Precisión (%)',font: {
-                            size: 16,
-                            family: 'TODON'
-                        } }, grid: { color: '#747576' },
-                    ticks: {
-                    font:{
-                        family: 'TODOC',
-                        size: 14,
-                    } 
-                    }
-                } 
-            } }
-        }); 
-    }
-
-    // Función para crear el gráfico de error
-    function createErrorChart(data) {
-        const ctx = document.getElementById('errorChart').getContext('2d');
-        return new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: data.map(d => d.nombre),
-                datasets: [{
-                    label: 'Error YOLO',
-                    data: data.map(d => parseNumber(d.error_yolo)),
-                    backgroundColor: 'rgba(54, 162, 235, 0.5)'
+                        size: 22,
+                        family: 'TODOC'
+                    },
+                    color: '#eef3f9'
                 },
-                {
-                    label: 'Error DETR',
-                    data: data.map(d => parseNumber(d.error_detr)),
-                    backgroundColor: 'rgba(255, 99, 132, 0.5)'
-                }]
+                legend: {
+                    labels: {
+                        color: '#eef3f9'
+                    }
+                }
             },
-            options: {
-                responsive: true,
-                plugins: {
+            scales: {
+                x: {
                     title: {
                         display: true,
-                        text: 'Comparación de Error',
+                        text: 'Tiempo (minutos)',
                         font: {
-                            size: 22,
-                            family: 'TODOC'
-                        }
-                    }
-                },
-                scales: {
-                x: {
+                            size: 16,
+                            family: 'TODON'
+                        },
+                        color: '#eef3f9'
+                    },
                     grid: {
-                        color: '#747576'
+                        color: '#eef3f9'
                     },
                     ticks: {
-                    font:{
-                        family: 'TODOC',
-                        size: 10,
-                    } 
+                        font: {
+                            family: 'TODOC',
+                            size: 14
+                        },
+                        color: '#eef3f9'
                     }
                 },
                 y: {
+                    title: {
+                        display: true,
+                        text: 'Precisión (%)',
+                        font: {
+                            size: 16,
+                            family: 'TODON'
+                        },
+                        color: '#eef3f9'
+                    },
                     grid: {
-                        color: '#747576'
+                        color: '#eef3f9'
                     },
                     ticks: {
-                    font:{
-                        family: 'TODOC',
-                        size: 14,
-                    } 
+                        font: {
+                            family: 'TODOC',
+                            size: 14
+                        },
+                        color: '#eef3f9'
                     }
                 }
+            }
+        }
+    });
+    }
+
+
+    // Función para crear el gráfico de error
+    function createErrorChart(data) {
+    const ctx = document.getElementById('errorChart').getContext('2d');
+    return new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.map(d => d.nombre),
+            datasets: [{
+                label: 'Error YOLO',
+                data: data.map(d => parseNumber(d.error_yolo)),
+                backgroundColor: '#a766ac',
+                borderColor: '#a766ac'
+            },
+            {
+                label: 'Error DETR',
+                data: data.map(d => parseNumber(d.error_detr)),
+                backgroundColor: '#2194a7',
+                borderColor: '#2194a7'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Comparación de Error',
+                    font: {
+                        size: 22,
+                        family: 'TODOC'
+                    },
+                    color: '#eef3f9'
+                },
+                legend: {
+                    labels: {
+                        color: '#eef3f9'
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Modelos',
+                        font: {
+                            size: 16,
+                            family: 'TODON'
+                        },
+                        color: '#eef3f9'
+                    },
+                    grid: {
+                        color: '#eef3f9'
+                    },
+                    ticks: {
+                        font: {
+                            family: 'TODOC',
+                            size: 10
+                        },
+                        color: '#eef3f9'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Error (%)',
+                        font: {
+                            size: 16,
+                            family: 'TODON'
+                        },
+                        color: '#eef3f9'
+                    },
+                    grid: {
+                        color: '#eef3f9'
+                    },
+                    ticks: {
+                        font: {
+                            family: 'TODOC',
+                            size: 14
+                        },
+                        color: '#eef3f9'
+                    }
                 }
             }
-        });
+        }
+    });
     }
+
 
     // Inicializar los gráficos con los datos
     window.onload = function() {
@@ -269,7 +331,7 @@
     };
 
    // Función para crear el gráfico de radar con más etiquetas
-function createSensibilidadEspecificidadChart(data) {
+    function createSensibilidadEspecificidadChart(data) {
     const ctx = document.getElementById('sensibilidadEspecificidadChart').getContext('2d');
     return new Chart(ctx, {
         type: 'radar',
@@ -283,9 +345,9 @@ function createSensibilidadEspecificidadChart(data) {
                     data.reduce((acc, curr) => acc + parseNumber(curr.error_yolo), 0) / data.length,
                     data.reduce((acc, curr) => acc + parseNumber(curr.precision_yolo), 0) / data.length
                 ],
-                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
+                backgroundColor: 'rgba(165, 34, 165, 0.2)', 
+                borderColor: '#a522a5',
+                borderWidth: 2
             },
             {
                 label: 'DETR',
@@ -295,9 +357,9 @@ function createSensibilidadEspecificidadChart(data) {
                     data.reduce((acc, curr) => acc + parseNumber(curr.error_detr), 0) / data.length,
                     data.reduce((acc, curr) => acc + parseNumber(curr.precision_detr), 0) / data.length
                 ],
-                backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                borderColor: 'rgba(255, 99, 132, 1)',
-                borderWidth: 1
+                backgroundColor: 'rgba(33, 148, 167, 0.2)',
+                borderColor: '#2194a7',
+                borderWidth: 2
             }]
         },
         options: {
@@ -307,21 +369,36 @@ function createSensibilidadEspecificidadChart(data) {
                     display: true,
                     text: 'Métricas Promedio (Sensibilidad, Especificidad, Error, Precisión)',
                     font: {
-                            size: 18,
-                            family: 'TODOC'
-                        }
+                        size: 18,
+                        family: 'TODOC'
+                    },
+                    color: '#eef3f9'
+                },
+                legend: {
+                    labels: {
+                        color: '#eef3f9'
+                    }
                 }
             },
             scales: {
                 r: {
                     beginAtZero: true,
                     max: 100,
-                    grid: { color: '#747576' },
+                    grid: { color: '#eef3f9' },
                     ticks: {
-                    font:{
-                        family: 'TODOC',
-                        size: 12,
-                    } 
+                        font: {
+                            family: 'TODOC',
+                            size: 12
+                        },
+                        color: '#eef3f9'
+                    },
+                    angleLines: { color: '#eef3f9' },
+                    pointLabels: {
+                        font: {
+                            family: 'TODOC',
+                            size: 14
+                        },
+                        color: '#eef3f9'
                     }
                 }
             }
@@ -330,68 +407,81 @@ function createSensibilidadEspecificidadChart(data) {
     }
 
     function createPrecisionChart(data) {
-        const ctx = document.getElementById('precisionChart').getContext('2d');
-        return new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: data.map(d => d.nombre),
-                datasets: [{
-                    label: 'Precisión YOLO',
-                    data: data.map(d => parseNumber(d.precision_yolo)), // Convertimos a porcentaje
-                    backgroundColor: 'rgba(54, 162, 235, 0.5)'
-                },
-                {
-                    label: 'Precisión DETR',
-                    data: data.map(d => parseNumber(d.precision_detr)), // Convertimos a porcentaje
-                    backgroundColor: 'rgba(255, 99, 132, 0.5)'
-                }]
+    const ctx = document.getElementById('precisionChart').getContext('2d');
+    return new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.map(d => d.nombre),
+            datasets: [{
+                label: 'Precisión YOLO',
+                data: data.map(d => parseNumber(d.precision_yolo)),
+                backgroundColor: '#a766ac',
+                borderWidth: 1
             },
-            options: {
-                responsive: true,
-                plugins: {
+            {
+                label: 'Precisión DETR',
+                data: data.map(d => parseNumber(d.precision_detr)),
+                backgroundColor: '#2194a7',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Comparación de Precisión (%)',
+                    font: {
+                        size: 22,
+                        family: 'TODOC'
+                    },
+                    color: '#eef3f9'
+                },
+                legend: {
+                    labels: {
+                        color: '#eef3f9'
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: '#eef3f9'
+                    },
+                    ticks: {
+                        font: {
+                            family: 'TODOC',
+                            size: 10
+                        },
+                        color: '#eef3f9'
+                    }
+                },
+                y: {
+                    grid: {
+                        color: '#eef3f9'
+                    },
                     title: {
                         display: true,
-                        text: 'Comparación de Precisión (%)',
-                        font: {
-                            size: 22,
-                            family: 'TODOC'
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        grid: {
-                            color: '#747576'
-                        },
-                        ticks: {
-                    font:{
-                        family: 'TODOC',
-                        size: 10,
-                    } 
-                    }
+                        text: 'Precisión (%)',
+                        color: '#eef3f9'
                     },
-                    y: {
-                        grid: {
-                            color: '#747576'
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function (value) {
+                            return value + '%';
                         },
-                        title: {
-                            display: true,
-                            text: 'Precisión (%)'
+                        font: {
+                            family: 'TODOC',
+                            size: 12
                         },
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function (value) {
-                                return value + '%'; // Agregar % a los valores del eje Y
-                            },
-                            font:{
-                        family: 'TODOC',
-                        size: 12,
-                        }}
+                        color: '#eef3f9'
                     }
                 }
             }
-        });
+        }
+    });
     }
+
     
     document.addEventListener("DOMContentLoaded", function () {
     const { jsPDF } = window.jspdf;

@@ -2,7 +2,6 @@
 .inicio {
   background-color: #111521
 }
-
 .centrarBoton{
   display: flex;
   justify-content: center;
@@ -10,9 +9,9 @@
 }
 
 .cssbuttons-io-button {
-  background: #6a7182;
+  background: #eef3f9;
   color: #111521;
-  font-family:'TodoN';
+  font-family:'TodoC';
   padding: 0.35em;
   padding-left: 1.2em;
   font-size: 17px;
@@ -22,7 +21,7 @@
   letter-spacing: 0.05em;
   display: flex;
   align-items: center;
-  box-shadow: inset 0 0 1.6em -0.6em #714da6;
+  box-shadow: inset 0 0 1.6em -0.6em #454446;
   overflow: hidden;
   position: relative;
   height: 2.8em;
@@ -40,7 +39,7 @@
   height: 2.2em;
   width: 2.2em;
   border-radius: 0.7em;
-  box-shadow: 0.1em 0.1em 0.6em 0.2em #7b52b9;
+  box-shadow: 0.1em 0.1em 0.6em 0.2em #454446;
   right: 0.3em;
   transition: all 0.3s;
 }
@@ -63,6 +62,34 @@
   transform: scale(0.95);
 }
 
+.form-control, .form-floating label {
+  font-family: TodoN;
+  background-color: transparent;
+  font-size: 18px;
+  color: #eef3f9;
+}
+.form-floating label {
+  font-size: 17px;
+  background-color: transparent;
+}
+.form-control:focus {
+  background-color: #3f4554;
+  color: #eef3f9;
+  box-shadow: 0 0 0 0.25rem rgba(38, 49, 70, 0.25);
+}
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label,
+.form-floating > .form-select ~ label {
+  color: #eef3f9;
+}
+.form-floating > .form-control:focus ~ label::after,
+.form-floating > .form-control:not(:placeholder-shown) ~ label::after,
+.form-floating > .form-select ~ label::after {
+  background-color: transparent;
+  color:#eef3f9;
+}
+
+/*******************************CONFIGURACIONES GENERALES***************************************/
 body {
   background-color: #111521;
   height: 100%;
@@ -167,19 +194,18 @@ body {
 .bd-mode-toggle .dropdown-menu .active .bi {
   display: block !important;
 }
-/************************************CONFIGURACION RADIO TECNOLOGIA****************************************/
+/************************************CONFIGURACION RADIO TECNOLOGIA**************************************/
 .container {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background-color: #111521;
 }
 
 .custom-radio {
   display: flex;
   flex-direction: column;
-  background-color: #fff;
+  background-color: #bbbbbc;
   border-radius: 10px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   overflow: hidden;
@@ -196,6 +222,7 @@ body {
   padding: 10px 20px;
   cursor: pointer;
   transition: background-color 0.3s ease-in-out;
+  margin-bottom: 0px;
 }
 
 .radio-circle {
@@ -209,7 +236,7 @@ body {
 
 .radio-text {
   font-size: 1rem;
-  color: #bbbbbc;
+  color: #3f4554;
   transition: color 0.3s ease-in-out;
 }
 
@@ -218,15 +245,12 @@ body {
 }
 
 .custom-radio input[type="radio"]:checked + .radio-label .radio-circle {
-  border-color: #bbbbbc;
+  border-color: #eef3f9;
   background-color: #6a7182;
 }
 
 .custom-radio input[type="radio"]:checked + .radio-label .radio-text {
-  color: #bbbbbc;
-}
-label{
-  margin-bottom: 0rem;
+  color: #eef3f9;
 }
 
 /*****************************CONFIGURACIÓN DE BOTON AGREGAR DATASET***************************************/
@@ -312,10 +336,7 @@ b,p{
   font-family: TodoN;
   font-size: 20px;
   margin-bottom: 5px;
-}
-.form-control, .form-floating label {
-  font-family: TodoN;
-  font-size: 16px; /* Tamaño de fuente */
+  color: #eef3f9;
 }
 a{
   z-index: 3;
@@ -333,7 +354,6 @@ a{
   font-family: TodoC;
   font-size: 30px;
   color: rgb(255, 255, 255);
-  margin-top: 20px;
   margin-bottom: 10px;
 }
 .CabInicio #inicioTexto{
@@ -354,16 +374,15 @@ a{
   margin-bottom: 15px;
 }
 
-.TextoN{
+#TextoN{
   align-items: center;
   font-family: TodoN;
   font-size: 25px;
-  color: rgb(255, 255, 255);
+  color: #eef3f9;
 }
 
 #Tabla{
-  border-collapse: collapse;
-  border: 5px inset #bbbbbc;
+  border: 2px solid #e8eaed;
   align-items: center;
   font-family: TodoN;
   font-size: 23px;
@@ -371,7 +390,11 @@ a{
   width:fit-content;
   margin-left: 100px;
   margin-right: 100px;
-  border-radius:22px;
+  border-radius: 10px;
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #6a7182;
+  overflow: hidden;
 }
 
 #Tabla thead {
@@ -393,15 +416,16 @@ a{
 #Tabla th {
   text-align: center;
   white-space: normal;
+  background-color: #bbbbbc;
+  font-weight: bold;
 }
 #Tabla td, #Tabla th {
   border: 1px solid #e8eaed; 
   padding: 5px; 
   vertical-align: top; 
   width: 1px; 
-  white-space: nowrap;
+  white-space: nowrap;  
 }
-
 .acciones {
   display: flex;
   align-items: center;
@@ -467,12 +491,11 @@ a{
   align-items: center;
   position: relative;
   margin-bottom: 50px;
-  overflow-x: auto;
+  overflow-x: auto;  
 }
 
 #TablaUsuarioA {
-  border-collapse: collapse;
-  border: 5px inset #bbbbbc;
+  border: 2px solid #6a7182;
   align-items: center;
   font-family: TodoN;
   font-size: 20px;
@@ -480,8 +503,10 @@ a{
   width: 100%;
   max-width: 90%;
   margin: 0 auto; 
-  border-radius: 22px;
+  border-radius: 10px;
   table-layout: fixed;
+  border-collapse: collapse;  
+  overflow: hidden;
 }
 
 #TablaUsuarioA thead {
@@ -537,7 +562,6 @@ a{
 .BotonEditarUsuarioA .IEditarUsuarioA{
   display: flex;
   align-items: center;
-  position:sticky;
   z-index: 2;
   right: 11.05%;
 }
@@ -913,9 +937,14 @@ input[type="text"] {
   padding: 15px;
   border-radius: 5px;
   outline: none;
+  background-color: #3f4554;
+  color: #eef3f9;
+}
+.Formulario::placeholder{
+  color: #eef3f9;
 }
 .Formulario:focus{
-  border-color: blueviolet;
+  border-color:#1c1c5a;
 }
 .selecNum{
   width: 100px;
@@ -925,6 +954,8 @@ input[type="text"] {
   font-size: 18px;
   font-family: TodoN;
   text-align: center;
+  background-color: #3f4554;
+  color: #eef3f9;
 }
 
 .contenedor-botones2 {
@@ -1363,7 +1394,7 @@ gap: 40px;
 .navbar a {
   float: left;
   display: block;
-  color: #f2f2f2;
+  color: #eef3f9;
   text-align: center;
   padding: 14px 16px;
   text-decoration: none;
@@ -1401,7 +1432,6 @@ gap: 40px;
 .BotonEditar .IEditar{
   display: flex;
   align-items: center;
-  position:sticky;
   z-index: 2;
   right: 11.05%;
 }
@@ -1438,7 +1468,6 @@ gap: 40px;
 .BotonEliminar .IEliminar{
   display: flex;
   align-items: center;
-  position:sticky;
   z-index: 2;
   right: 11.05%;
 }
@@ -1462,7 +1491,7 @@ gap: 40px;
   font-family: TODON;
 }
 .chart-container {
-  background: white;
+  background: #3f4554;
   border-radius: 8px;
   padding: 15px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -1472,23 +1501,26 @@ gap: 40px;
   grid-column: 1 / -1;
   display: flex;
   justify-content: space-around;
-  background: white;
+  background: #3f4554;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-left: 20px;
+  margin-right: 20px;
 }
 .metric-card {
   text-align: center;
   padding: 10px;
   font-family: TODON;
+  color: #eef3f9;
 }
 .metric-value {
   font-size: 24px;
   font-weight: bold;
-  color: #2c3e50;
+  color: #eef3f9;
 }
 .metric-label {
-  color: #7f8c8d;
+  color: #eef3f9;
   font-size: 14px;
 }
 
@@ -1695,6 +1727,7 @@ gap: 40px;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 1;
+  margin-top: 8px;
 }
 
 .labelSeleccionador{
@@ -2190,7 +2223,7 @@ gap: 40px;
 }
 
 .modal-content {
-    background-color: white;
+    background-color: #6a7182;
     padding: 30px;
     border-radius: 10px;
     text-align: center;
@@ -2204,7 +2237,6 @@ gap: 40px;
 .modal.show .modal-content {
     transform: translateY(0);
 }
-
 
 .loader-container {
     margin: 0 auto 20px;
@@ -2246,6 +2278,7 @@ gap: 40px;
 .h3 {
   transform: rotate(-60deg);
   -webkit-transform: rotate(-60deg);
+  color:#eef3f9;
 }
 
 .gel {

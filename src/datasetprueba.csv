@@ -1,8 +1,0 @@
-idDataSetPrueba,idUsuarios,idTiposBasura,NombreData,Formato,Cantidad,Ruta
-9,1,17,YoloV5T,.jpg,258,C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Datasets\calidar\test\images
-11,42,19,Validara,.jpg,41,C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Datasets\hackathone.v2i.coco\test
-12,1,15,TransLite,.jpg,258,C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Datasets\Intento\test
-15,42,9,Yolo1000,.jpg,258,C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Datasets\Yolo1000\test\images
-16,1,10,Yolo300,.jpg,41,C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Datasets\Yolo300\test\images
-17,43,18,TransYa,.jpg,41,C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Datasets\hackathone.v2i.coco\test
-18,43,16,IntentoAnotacio,.jpg,258,C:\Users\nayel\Desktop\Estadia - AVAO191844\Sistema\src\Datasets\calidar\test\images
