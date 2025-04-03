@@ -489,18 +489,15 @@
     const buttonElement = document.querySelector('.buttondescargar');
     let generatedPDF;
 
-    // Deshabilitar el botón hasta que el PDF esté listo
     buttonElement.disabled = true;
 
     window.addEventListener("load", async function () {
-      // Retraso para asegurar que todo esté completamente cargado
       setTimeout(async () => {
         try {
           const pdf = new jsPDF();
           let yPosition = 60;
           let pageCounter = 1;
 
-          // Cargar logotipo
           const logoURL = "/static/img/UPE_vertical.png";
           const logoData = await fetch(logoURL)
             .then(response => response.blob())
@@ -510,7 +507,6 @@
               reader.readAsDataURL(blob);
             }));
 
-          // Agregar contenido al PDF
           const addPageHeader = () => {
             pdf.setFontSize(14);
             pdf.text("Resultado de Reportes", 105, 10, { align: "center" });
@@ -526,16 +522,23 @@
 
           addPageHeader();
 
-        const charts = [
-        { id: "tiempoPrecisionChart", title: "Tiempo vs Precisión", description: "Este gráfico muestra la relación entre el tiempo y la precisión alcanzada por los modelos en sus evaluaciones." },
-        { id: "errorChart", title: "Error", description: "Este gráfico muestra la comparación del porcentaje de error del modelo respectivamente en cada evaluación." },
-        { id: "sensibilidadEspecificidadChart", title: "Sensibilidad y Especificidad", description: "Este gráfico muestra la relación de las métricas que se obtienen de todas las evaluaciones generadas diferenciandose por modelo.", height: 165 },
-        { id: "precisionChart", title: "Precisión", description: "Este gráfico muestra la precisión de cada modelo dividido por cada una de las evaluaciones realizadas." },
-        ];
+          const charts = [
+            { id: "tiempoPrecisionChart", title: "Tiempo vs Precisión", description: "Este gráfico muestra la relación entre el tiempo y la precisión alcanzada por los modelos en sus evaluaciones." },
+            { id: "errorChart", title: "Error", description: "Este gráfico muestra la comparación del porcentaje de error del modelo respectivamente en cada evaluación." },
+            { id: "sensibilidadEspecificidadChart", title: "Sensibilidad y Especificidad", description: "Este gráfico muestra la relación de las métricas que se obtienen de todas las evaluaciones generadas diferenciandose por modelo.", height: 165 },
+            { id: "precisionChart", title: "Precisión", description: "Este gráfico muestra la precisión de cada modelo dividido por cada una de las evaluaciones realizadas." },
+          ];
 
           for (const chart of charts) {
             const canvas = document.getElementById(chart.id);
             if (canvas) {
+              const originalBackgroundColor = canvas.style.backgroundColor;
+              canvas.style.backgroundColor = "#3f4554";
+
+              const canvasImage = await html2canvas(canvas).then(canvasElement => canvasElement.toDataURL("image/png"));
+
+              canvas.style.backgroundColor = originalBackgroundColor;
+
               pdf.setFont("helvetica", "bold");
               pdf.setFontSize(14);
               pdf.text(chart.title, 10, yPosition);
@@ -547,9 +550,7 @@
               pdf.text(descriptionLines, 10, yPosition);
               yPosition += (descriptionLines.length * 7);
 
-              const canvasImage = await html2canvas(canvas).then(canvasElement => canvasElement.toDataURL("image/png"));
-
-              const canvasHeight = chart.height || 90; // Usar altura específica si está definida, o por defecto 90px
+              const canvasHeight = chart.height || 90;
               pdf.addImage(canvasImage, "PNG", 15, yPosition, 180, canvasHeight);
               yPosition += canvasHeight + 10;
 
@@ -562,26 +563,23 @@
             }
           }
 
-          // Calcular el tamaño del PDF
           const pdfOutput = pdf.output("arraybuffer");
           const pdfSizeInBytes = pdfOutput.byteLength;
           const pdfSizeInMB = pdfSizeInBytes / (1024 * 1024);
 
-          // Actualizar tooltip con el tamaño del PDF
           tooltipElement.setAttribute('data-tooltip', `Size: ${pdfSizeInMB.toFixed(2)} MB`);
           console.log(`El tamaño del PDF es: ${pdfSizeInMB.toFixed(2)} MB`);
 
-          generatedPDF = pdf; // Guardar el PDF generado
+          generatedPDF = pdf;
         } catch (error) {
           console.error("Error generando el PDF:", error);
           alert("Error al generar el PDF.");
         } finally {
-          buttonElement.disabled = false; // Habilitar el botón
+          buttonElement.disabled = false;
         }
-      }, 3000); // Retraso de 3 segundos
+      }, 3000);
     });
 
-    // Descargar el PDF al hacer clic en el botón
     buttonElement.addEventListener("click", function () {
       if (generatedPDF) {
         generatedPDF.save("Reporte_Evaluaciones.pdf");
@@ -590,6 +588,7 @@
       }
     });
   });
+
 
 </script>
 {% endblock %}
